@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}} - AnyWebsites 管理后台</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            margin: 2px 0;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #667eea !important;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        .table th {
+            border-top: none;
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+        }
+
+        /* API 文档侧边栏样式 */
+        .api-docs-sidebar {
+            margin: 1rem 0;
+        }
+
+        .api-docs-sidebar h6 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+
+        .api-doc-nav-link {
+            font-size: 0.85rem;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .api-doc-nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(3px);
+        }
+
+        .api-doc-nav-link i.bi-box-arrow-up-right {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- 侧边栏 -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">
+                            <i class="bi bi-globe"></i>
+                            AnyWebsites
+                        </h4>
+                        <small class="text-white-50">管理后台</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link {{if eq .Page "dashboard"}}active{{end}}" href="/admin">
+                                <i class="bi bi-speedometer2"></i>
+                                仪表板
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{if eq .Page "contents"}}active{{end}}" href="/admin/contents">
+                                <i class="bi bi-file-earmark-text"></i>
+                                内容管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{if eq .Page "users"}}active{{end}}" href="/admin/users">
+                                <i class="bi bi-people"></i>
+                                用户管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{if or (eq .Page "user-plans") (eq .Page "user-plan-edit") (eq .Page "plan-stats")}}active{{end}}" href="/admin/user-plans">
+                                <i class="bi bi-award"></i>
+                                用户计划
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{if eq .Page "analytics"}}active{{end}}" href="/admin/analytics">
+                                <i class="bi bi-graph-up"></i>
+                                统计分析
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{if eq .Page "geoip-monitor"}}active{{end}}" href="/admin/geoip-monitor">
+                                <i class="bi bi-globe"></i>
+                                GeoIP 监控
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{if eq .Page "settings"}}active{{end}}" href="/admin/settings">
+                                <i class="bi bi-gear"></i>
+                                系统设置
+                            </a>
+                        </li>
+                    </ul>
+
+                    <hr class="text-white-50">
+
+                    <!-- API 文档链接 -->
+                    <div class="api-docs-sidebar">
+                        <h6 class="text-white-50 mb-3">
+                            <i class="bi bi-book me-2"></i>
+                            开发者资源
+                        </h6>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link api-doc-nav-link" href="/docs/swagger-ui.html" target="_blank">
+                                    <i class="bi bi-code-square"></i>
+                                    API 文档
+                                    <i class="bi bi-box-arrow-up-right ms-auto"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link api-doc-nav-link" href="/docs/README.md" target="_blank">
+                                    <i class="bi bi-file-text"></i>
+                                    使用指南
+                                    <i class="bi bi-box-arrow-up-right ms-auto"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link api-doc-nav-link" href="/docs/AnyWebsites-API.postman_collection.json" target="_blank">
+                                    <i class="bi bi-download"></i>
+                                    Postman 集合
+                                    <i class="bi bi-box-arrow-up-right ms-auto"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <hr class="text-white-50">
+
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/logout">
+                                <i class="bi bi-box-arrow-right"></i>
+                                退出登录
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- 主内容区域 -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <!-- 顶部导航栏 -->
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">{{.Title}}</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-person-circle"></i>
+                                {{.Username}}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 页面内容 -->
+                {{if eq .Page "dashboard"}}
+                    {{template "dashboard-content" .}}
+                {{else if eq .Page "contents"}}
+                    {{template "contents-content" .}}
+                {{else if eq .Page "content-form"}}
+                    {{template "content-form-content" .}}
+                {{else if eq .Page "users"}}
+                    {{template "users-content" .}}
+                {{else if eq .Page "user-form"}}
+                    {{template "user-form-content" .}}
+                {{else if eq .Page "analytics"}}
+                    {{template "analytics-content" .}}
+                {{else if eq .Page "geoip-monitor"}}
+                    {{template "geoip-monitor" .}}
+                {{else if eq .Page "settings"}}
+                    {{template "settings-content" .}}
+                {{else}}
+                    <div class="alert alert-warning">
+                        <h4>页面未找到</h4>
+                        <p>请求的页面不存在或正在开发中。</p>
+                    </div>
+                {{end}}
+            </main>
+        </div>
+    </div>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 自动刷新时间
+        function updateTime() {
+            const now = new Date();
+            const timeElements = document.querySelectorAll('.current-time');
+            timeElements.forEach(el => {
+                el.textContent = now.toLocaleString('zh-CN');
+            });
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+    {{if eq .Page "dashboard"}}
+        {{template "scripts" .}}
+    {{else if eq .Page "contents"}}
+        {{template "contents-scripts" .}}
+    {{else if eq .Page "content-form"}}
+        {{template "content-form-scripts" .}}
+    {{else if eq .Page "users"}}
+        {{template "users-scripts" .}}
+    {{else if eq .Page "user-form"}}
+        {{template "user-form-scripts" .}}
+    {{else if eq .Page "analytics"}}
+        {{template "analytics-scripts" .}}
+    {{else}}
+        {{template "scripts" .}}
+    {{end}}
+</body>
+</html>

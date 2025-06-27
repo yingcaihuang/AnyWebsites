@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>编辑计划配置 - AnyWebsites 管理后台</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            margin: 2px 0;
+        }
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #667eea !important;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+        }
+        .table th {
+            border-top: none;
+            background-color: #f8f9fa !important;
+            color: #495057 !important;
+            border-bottom: 2px solid #dee2e6 !important;
+            font-weight: 600 !important;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .table thead th {
+            background-color: #f8f9fa !important;
+            color: #495057 !important;
+        }
+        .table-light th {
+            background-color: #f8f9fa !important;
+            color: #495057 !important;
+        }
+        .bg-light th {
+            background-color: #f8f9fa !important;
+            color: #495057 !important;
+        }
+        .status-badge {
+            font-size: 0.75rem;
+        }
+
+         
+        .api-docs-sidebar {
+            margin: 1rem 0;
+        }
+
+        .api-docs-sidebar h6 {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.75rem;
+        }
+
+        .api-doc-nav-link {
+            font-size: 0.85rem;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .api-doc-nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateX(3px);
+        }
+
+        .api-doc-nav-link i.bi-box-arrow-up-right {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="position-sticky pt-3">
+                    <div class="text-center mb-4">
+                        <h4 class="text-white">
+                            <i class="bi bi-globe"></i>
+                            AnyWebsites
+                        </h4>
+                        <small class="text-white-50">管理后台</small>
+                    </div>
+                    
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link " href="/admin">
+                                <i class="bi bi-speedometer2"></i>
+                                仪表板
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/admin/contents">
+                                <i class="bi bi-file-earmark-text"></i>
+                                内容管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/admin/users">
+                                <i class="bi bi-people"></i>
+                                用户管理
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/admin/user-plans">
+                                <i class="bi bi-award"></i>
+                                用户计划
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="/admin/plan-configs">
+                                <i class="bi bi-gear"></i>
+                                计划配置
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/admin/analytics">
+                                <i class="bi bi-graph-up"></i>
+                                统计分析
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/admin/geoip-monitor">
+                                <i class="bi bi-globe"></i>
+                                GeoIP 监控
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link " href="/admin/settings">
+                                <i class="bi bi-gear"></i>
+                                系统设置
+                            </a>
+                        </li>
+                    </ul>
+
+                    <hr class="text-white-50">
+
+                    
+                    <div class="api-docs-sidebar">
+                        <h6 class="text-white-50 mb-3">
+                            <i class="bi bi-book me-2"></i>
+                            开发者资源
+                        </h6>
+                        <ul class="nav flex-column">
+                            <li class="nav-item">
+                                <a class="nav-link api-doc-nav-link" href="/docs/swagger-ui.html" target="_blank">
+                                    <i class="bi bi-code-square"></i>
+                                    API 文档
+                                    <i class="bi bi-box-arrow-up-right ms-auto"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link api-doc-nav-link" href="/docs/README.md" target="_blank">
+                                    <i class="bi bi-file-text"></i>
+                                    使用指南
+                                    <i class="bi bi-box-arrow-up-right ms-auto"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link api-doc-nav-link" href="/docs/AnyWebsites-API.postman_collection.json" target="_blank">
+                                    <i class="bi bi-download"></i>
+                                    Postman 集合
+                                    <i class="bi bi-box-arrow-up-right ms-auto"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <hr class="text-white-50">
+
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/admin/logout">
+                                <i class="bi bi-box-arrow-right"></i>
+                                退出登录
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                
+                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                    <h1 class="h2">编辑计划配置</h1>
+                    <div class="btn-toolbar mb-2 mb-md-0">
+                        <div class="btn-group me-2">
+                            <button type="button" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-person-circle"></i>
+                                admin
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                
+                
+                    
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>编辑计划配置</h2>
+                <a href="/admin/plan-configs" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回列表
+                </a>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">编辑计划配置</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="planConfigForm">
+                                <div class="row">
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="type" class="form-label">计划类型 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="type" name="type" 
+                                               value="premium" 
+                                               readonly required>
+                                        <div class="form-text">
+                                            计划类型创建后不可修改
+                                        </div>
+                                    </div>
+
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="name" class="form-label">计划名称 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="name" name="name" 
+                                               value="Premium Plus Plan" required>
+                                        <div class="form-text">用户可见的计划名称</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="price" class="form-label">价格 (USD) <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="price" name="price" 
+                                               value="39.99" 
+                                               min="0" step="0.01" required>
+                                        <div class="form-text">月费价格，0表示免费</div>
+                                    </div>
+
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="currency" class="form-label">货币 <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="currency" name="currency" required>
+                                            <option value="USD" selected>USD</option>
+                                            <option value="CNY" >CNY</option>
+                                            <option value="EUR" >EUR</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="article_retention_days" class="form-label">文章保留天数 <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="article_retention_days" name="article_retention_days" 
+                                               value="-1" required>
+                                        <div class="form-text">-1表示无限制</div>
+                                    </div>
+
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="monthly_upload_limit" class="form-label">月上传限制 <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="monthly_upload_limit" name="monthly_upload_limit" 
+                                               value="1000" required>
+                                        <div class="form-text">每月可上传文章数量，-1表示无限制</div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="storage_limit_mb" class="form-label">存储限制 (MB) <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="storage_limit_mb" name="storage_limit_mb" 
+                                               value="10240" required>
+                                        <div class="form-text">存储空间限制，-1表示无限制</div>
+                                    </div>
+
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="api_rate_limit_per_hour" class="form-label">API限制/小时 <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="api_rate_limit_per_hour" name="api_rate_limit_per_hour" 
+                                               value="10000" required>
+                                        <div class="form-text">每小时API调用限制，-1表示无限制</div>
+                                    </div>
+                                </div>
+
+                                
+                                <div class="mb-3">
+                                    <label for="features" class="form-label">功能特性</label>
+                                    <textarea class="form-control" id="features" name="features" rows="4" 
+                                              placeholder='["功能1","功能2","功能3"]'>[&#34;无限文章存储&#34;, &#34;高级分析&#34;, &#34;优先支持&#34;, &#34;自定义域名&#34;, &#34;API访问&#34;]</textarea>
+                                    <div class="form-text">JSON格式的功能列表，用于展示给用户</div>
+                                </div>
+
+                                
+                                <div class="mb-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                                               >
+                                        <label class="form-check-label" for="is_active">
+                                            启用此计划配置
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a href="/admin/plan-configs" class="btn btn-secondary">取消</a>
+                                    <button type="submit" class="btn btn-primary">
+                                        更新配置
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('planConfigForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const data = {
+        type: formData.get('type'),
+        name: formData.get('name'),
+        price: parseFloat(formData.get('price')),
+        currency: formData.get('currency'),
+        article_retention_days: parseInt(formData.get('article_retention_days')),
+        monthly_upload_limit: parseInt(formData.get('monthly_upload_limit')),
+        storage_limit_mb: parseInt(formData.get('storage_limit_mb')),
+        api_rate_limit_per_hour: parseInt(formData.get('api_rate_limit_per_hour')),
+        features: formData.get('features'),
+        is_active: formData.has('is_active')
+    };
+
+    
+    if (data.features) {
+        try {
+            JSON.parse(data.features);
+        } catch (e) {
+            alert('功能特性必须是有效的JSON格式');
+            return;
+        }
+    }
+
+    const isEdit =  true ;
+    const url = isEdit ? `/admin/plan-configs/15a410fa-07a2-4438-ad2a-4478c9a9f110` : '/admin/plan-configs';
+    const method = isEdit ? 'PUT' : 'POST';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert('操作失败: ' + data.error);
+        } else {
+            alert(data.message);
+            window.location.href = '/admin/plan-configs';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('操作失败，请重试');
+    });
+});
+</script>
+
+                
+            </main>
+        </div>
+    </div>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script>
+        
+        function updateTime() {
+            const now = new Date();
+            const timeElements = document.querySelectorAll('.current-time');
+            timeElements.forEach(el => {
+                el.textContent = now.toLocaleString('zh-CN');
+            });
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+    
+        
+<script>
+    
+    console.log('Dashboard loaded');
+</script>
+
+    
+</body>
+</html>

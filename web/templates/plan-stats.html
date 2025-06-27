@@ -1,0 +1,347 @@
+{{define "content"}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>计划统计</h2>
+                <a href="/admin/user-plans" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回用户计划
+                </a>
+            </div>
+
+            <!-- 总览卡片 -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title">{{len .Stats}}</h4>
+                                    <p class="card-text">活跃计划类型</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-layer-group fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title">
+                                        {{$totalUsers := 0}}
+                                        {{range .Stats}}
+                                            {{$totalUsers = add $totalUsers .UserCount}}
+                                        {{end}}
+                                        {{$totalUsers}}
+                                    </h4>
+                                    <p class="card-text">总用户数</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-users fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title">${{printf "%.2f" .TotalRevenue}}</h4>
+                                    <p class="card-text">月收入（估算）</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-dollar-sign fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h4 class="card-title">${{printf "%.2f" (mul .TotalRevenue 12)}}</h4>
+                                    <p class="card-text">年收入（估算）</p>
+                                </div>
+                                <div class="align-self-center">
+                                    <i class="fas fa-chart-line fa-2x"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- 计划分布图表 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">用户计划分布</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="planDistributionChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 收入分布图表 -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">收入分布</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="revenueDistributionChart" width="400" height="300"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 详细统计表格 -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">详细统计</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-hover">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>计划类型</th>
+                                            <th>用户数量</th>
+                                            <th>用户占比</th>
+                                            <th>单价</th>
+                                            <th>月收入</th>
+                                            <th>年收入</th>
+                                            <th>收入占比</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{$totalUsers := 0}}
+                                        {{range .Stats}}
+                                            {{$totalUsers = add $totalUsers .UserCount}}
+                                        {{end}}
+                                        
+                                        {{range .Stats}}
+                                        <tr>
+                                            <td>
+                                                <span class="badge bg-{{if eq .PlanType "community"}}secondary{{else if eq .PlanType "developer"}}primary{{else if eq .PlanType "pro"}}success{{else if eq .PlanType "max"}}warning{{else}}danger{{end}}">
+                                                    {{if eq .PlanType "community"}}Community{{else if eq .PlanType "developer"}}Developer{{else if eq .PlanType "pro"}}Pro{{else if eq .PlanType "max"}}Max{{else}}Enterprise{{end}}
+                                                </span>
+                                            </td>
+                                            <td><strong>{{.UserCount}}</strong></td>
+                                            <td>
+                                                {{if gt $totalUsers 0}}
+                                                    {{$percentage := mul (div .UserCount $totalUsers) 100}}
+                                                    {{printf "%.1f%%" $percentage}}
+                                                {{else}}
+                                                    0.0%
+                                                {{end}}
+                                            </td>
+                                            <td>
+                                                {{if eq .PlanType "community"}}
+                                                    免费
+                                                {{else if eq .PlanType "developer"}}
+                                                    $50.00/月
+                                                {{else if eq .PlanType "pro"}}
+                                                    $100.00/月
+                                                {{else if eq .PlanType "max"}}
+                                                    $250.00/月
+                                                {{else}}
+                                                    联系销售
+                                                {{end}}
+                                            </td>
+                                            <td>
+                                                {{if eq .PlanType "community"}}
+                                                    $0.00
+                                                {{else if eq .PlanType "developer"}}
+                                                    ${{printf "%.2f" (mul .UserCount 50.0)}}
+                                                {{else if eq .PlanType "pro"}}
+                                                    ${{printf "%.2f" (mul .UserCount 100.0)}}
+                                                {{else if eq .PlanType "max"}}
+                                                    ${{printf "%.2f" (mul .UserCount 250.0)}}
+                                                {{else}}
+                                                    联系销售
+                                                {{end}}
+                                            </td>
+                                            <td>
+                                                {{if eq .PlanType "community"}}
+                                                    $0.00
+                                                {{else if eq .PlanType "developer"}}
+                                                    ${{printf "%.2f" (mul (mul .UserCount 50.0) 12)}}
+                                                {{else if eq .PlanType "pro"}}
+                                                    ${{printf "%.2f" (mul (mul .UserCount 100.0) 12)}}
+                                                {{else if eq .PlanType "max"}}
+                                                    ${{printf "%.2f" (mul (mul .UserCount 250.0) 12)}}
+                                                {{else}}
+                                                    联系销售
+                                                {{end}}
+                                            </td>
+                                            <td>
+                                                {{$monthlyRevenue := 0.0}}
+                                                {{if eq .PlanType "developer"}}
+                                                    {{$monthlyRevenue = mul .UserCount 50.0}}
+                                                {{else if eq .PlanType "pro"}}
+                                                    {{$monthlyRevenue = mul .UserCount 100.0}}
+                                                {{else if eq .PlanType "max"}}
+                                                    {{$monthlyRevenue = mul .UserCount 250.0}}
+                                                {{end}}
+                                                
+                                                {{if and (gt $.TotalRevenue 0) (gt $monthlyRevenue 0)}}
+                                                    {{printf "%.1f%%" (mul (div $monthlyRevenue $.TotalRevenue) 100)}}
+                                                {{else}}
+                                                    0.0%
+                                                {{end}}
+                                            </td>
+                                        </tr>
+                                        {{else}}
+                                        <tr>
+                                            <td colspan="7" class="text-center text-muted">暂无统计数据</td>
+                                        </tr>
+                                        {{end}}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// 计划分布饼图
+const planCtx = document.getElementById('planDistributionChart').getContext('2d');
+const planData = {
+    labels: [
+        {{range .Stats}}
+        '{{if eq .PlanType "community"}}Community{{else if eq .PlanType "developer"}}Developer{{else if eq .PlanType "pro"}}Pro{{else if eq .PlanType "max"}}Max{{else}}Enterprise{{end}}',
+        {{end}}
+    ],
+    datasets: [{
+        data: [
+            {{range .Stats}}
+            {{.UserCount}},
+            {{end}}
+        ],
+        backgroundColor: [
+            '#6c757d', // Community - secondary
+            '#0d6efd', // Developer - primary  
+            '#198754', // Pro - success
+            '#ffc107', // Max - warning
+            '#dc3545'  // Enterprise - danger
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+    }]
+};
+
+new Chart(planCtx, {
+    type: 'doughnut',
+    data: planData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = ((context.parsed / total) * 100).toFixed(1);
+                        return context.label + ': ' + context.parsed + ' (' + percentage + '%)';
+                    }
+                }
+            }
+        }
+    }
+});
+
+// 收入分布饼图
+const revenueCtx = document.getElementById('revenueDistributionChart').getContext('2d');
+const revenueData = {
+    labels: [
+        {{range .Stats}}
+        {{if ne .PlanType "community"}}
+        '{{if eq .PlanType "developer"}}Developer{{else if eq .PlanType "pro"}}Pro{{else if eq .PlanType "max"}}Max{{else}}Enterprise{{end}}',
+        {{end}}
+        {{end}}
+    ],
+    datasets: [{
+        data: [
+            {{range .Stats}}
+            {{if eq .PlanType "developer"}}
+            {{mul .UserCount 50.0}},
+            {{else if eq .PlanType "pro"}}
+            {{mul .UserCount 100.0}},
+            {{else if eq .PlanType "max"}}
+            {{mul .UserCount 250.0}},
+            {{end}}
+            {{end}}
+        ],
+        backgroundColor: [
+            '#0d6efd', // Developer - primary  
+            '#198754', // Pro - success
+            '#ffc107', // Max - warning
+            '#dc3545'  // Enterprise - danger
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+    }]
+};
+
+new Chart(revenueCtx, {
+    type: 'doughnut',
+    data: revenueData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return context.label + ': $' + context.parsed.toFixed(2);
+                    }
+                }
+            }
+        }
+    }
+});
+</script>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.table th {
+    border-top: none;
+}
+
+canvas {
+    max-height: 300px;
+}
+</style>
+{{end}}

@@ -1,0 +1,730 @@
+{{define "settings-content"}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>系统设置</h2>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary" onclick="exportSettings()">
+                        <i class="bi bi-download"></i> 导出设置
+                    </button>
+                    <button class="btn btn-outline-success" onclick="showImportModal()">
+                        <i class="bi bi-upload"></i> 导入设置
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshSettings()">
+                        <i class="bi bi-arrow-clockwise"></i> 刷新
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置分类导航 -->
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">设置分类</h5>
+                </div>
+                <div class="list-group list-group-flush" id="settings-categories">
+                    {{range .Categories}}
+                    <a href="#" class="list-group-item list-group-item-action category-item" 
+                       data-category="{{.Name}}" onclick="loadCategorySettings('{{.Name}}')">
+                        <i class="{{.Icon}} me-2"></i>
+                        {{.DisplayName}}
+                        <span class="badge bg-secondary float-end">{{len .Settings}}</span>
+                    </a>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+
+        <!-- 设置内容区域 -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0" id="category-title">选择一个分类</h5>
+                    <button class="btn btn-sm btn-success" onclick="showAddSettingModal()" id="add-setting-btn" style="display: none;">
+                        <i class="bi bi-plus"></i> 添加设置
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div id="settings-content">
+                        <div class="text-center text-muted py-5">
+                            <i class="bi bi-gear" style="font-size: 3rem;"></i>
+                            <p class="mt-3">请从左侧选择一个设置分类</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加/编辑设置模态框 -->
+<div class="modal fade" id="settingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="settingModalTitle">添加设置</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="settingForm">
+                    <input type="hidden" id="settingId" name="id">
+                    <input type="hidden" id="settingCategory" name="category">
+                    
+                    <div class="mb-3">
+                        <label for="settingKey" class="form-label">设置键名 *</label>
+                        <input type="text" class="form-control" id="settingKey" name="key" required>
+                        <div class="form-text">设置的唯一标识符，只能包含字母、数字和下划线</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="settingValueType" class="form-label">值类型 *</label>
+                        <select class="form-select" id="settingValueType" name="value_type" onchange="updateValueInput()">
+                            <option value="string">字符串</option>
+                            <option value="int">整数</option>
+                            <option value="bool">布尔值</option>
+                            <option value="json">JSON对象</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3" id="valueInputContainer">
+                        <label for="settingValue" class="form-label">设置值 *</label>
+                        <input type="text" class="form-control" id="settingValue" name="value" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="settingDescription" class="form-label">描述</label>
+                        <textarea class="form-control" id="settingDescription" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="changeReason" class="form-label">修改原因</label>
+                        <input type="text" class="form-control" id="changeReason" name="reason" placeholder="请说明修改此设置的原因">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="saveSetting()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 导入设置模态框 -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">导入设置</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="importFile" class="form-label">选择备份文件</label>
+                    <input type="file" class="form-control" id="importFile" accept=".json">
+                    <div class="form-text">请选择之前导出的设置备份文件（JSON格式）</div>
+                </div>
+                
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="overwriteExisting">
+                        <label class="form-check-label" for="overwriteExisting">
+                            覆盖现有设置
+                        </label>
+                        <div class="form-text">如果勾选，将覆盖已存在的同名设置</div>
+                    </div>
+                </div>
+                
+                <div id="importPreview" style="display: none;">
+                    <h6>导入预览：</h6>
+                    <div class="border rounded p-3 bg-light">
+                        <div id="importSummary"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" onclick="importSettings()" id="importBtn" disabled>导入</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 设置历史模态框 -->
+<div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historyModalTitle">设置历史</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="historyContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentCategory = '';
+let currentSettings = [];
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    // 默认加载第一个分类
+    const firstCategory = document.querySelector('.category-item');
+    if (firstCategory) {
+        const categoryName = firstCategory.getAttribute('data-category');
+        loadCategorySettings(categoryName);
+    }
+    
+    // 文件选择事件
+    document.getElementById('importFile').addEventListener('change', previewImport);
+});
+
+// 加载分类设置
+function loadCategorySettings(category) {
+    currentCategory = category;
+    
+    // 更新导航状态
+    document.querySelectorAll('.category-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.querySelector(`[data-category="${category}"]`).classList.add('active');
+    
+    // 更新标题
+    const categoryItem = document.querySelector(`[data-category="${category}"]`);
+    const categoryTitle = categoryItem.querySelector('i').className + ' ' + categoryItem.textContent.trim();
+    document.getElementById('category-title').innerHTML = categoryTitle.replace(/\d+$/, '').trim();
+    
+    // 显示添加按钮
+    document.getElementById('add-setting-btn').style.display = 'block';
+    
+    // 加载设置
+    fetch(`/admin/api/settings/category/${category}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                currentSettings = data.settings || [];
+                renderSettings(currentSettings);
+            } else {
+                showError('加载设置失败: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('加载设置失败');
+        });
+}
+
+// 渲染设置列表
+function renderSettings(settings) {
+    const container = document.getElementById('settings-content');
+    
+    if (!settings || settings.length === 0) {
+        container.innerHTML = `
+            <div class="text-center text-muted py-5">
+                <i class="bi bi-gear" style="font-size: 3rem;"></i>
+                <p class="mt-3">此分类下暂无设置</p>
+                <button class="btn btn-primary" onclick="showAddSettingModal()">
+                    <i class="bi bi-plus"></i> 添加第一个设置
+                </button>
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '<div class="table-responsive"><table class="table table-hover">';
+    html += `
+        <thead>
+            <tr>
+                <th>键名</th>
+                <th>值</th>
+                <th>类型</th>
+                <th>描述</th>
+                <th>最后更新</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+    
+    settings.forEach(setting => {
+        const value = formatSettingValue(setting.value, setting.value_type);
+        const updateTime = new Date(setting.updated_at).toLocaleString();
+        
+        html += `
+            <tr>
+                <td><code>${setting.key}</code></td>
+                <td>${value}</td>
+                <td><span class="badge bg-info">${getValueTypeLabel(setting.value_type)}</span></td>
+                <td>${setting.description || '-'}</td>
+                <td>${updateTime}</td>
+                <td>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn btn-outline-primary" onclick="editSetting('${setting.id}')" title="编辑">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-info" onclick="showHistory('${setting.category}', '${setting.key}')" title="历史">
+                            <i class="bi bi-clock-history"></i>
+                        </button>
+                        ${!setting.is_system ? `
+                        <button class="btn btn-outline-danger" onclick="deleteSetting('${setting.id}', '${setting.key}')" title="删除">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                        ` : ''}
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    
+    html += '</tbody></table></div>';
+    container.innerHTML = html;
+}
+
+// 格式化设置值显示
+function formatSettingValue(value, type) {
+    if (value === null || value === undefined) {
+        return '<span class="text-muted">null</span>';
+    }
+    
+    switch (type) {
+        case 'bool':
+            return value ? '<span class="badge bg-success">true</span>' : '<span class="badge bg-danger">false</span>';
+        case 'json':
+            const jsonStr = typeof value === 'string' ? value : JSON.stringify(value);
+            return `<code class="text-truncate d-inline-block" style="max-width: 200px;" title="${jsonStr}">${jsonStr}</code>`;
+        case 'int':
+            return `<span class="badge bg-secondary">${value}</span>`;
+        default:
+            const strValue = String(value);
+            if (strValue.length > 50) {
+                return `<span title="${strValue}">${strValue.substring(0, 50)}...</span>`;
+            }
+            return strValue;
+    }
+}
+
+// 获取值类型标签
+function getValueTypeLabel(type) {
+    const labels = {
+        'string': '字符串',
+        'int': '整数',
+        'bool': '布尔值',
+        'json': 'JSON'
+    };
+    return labels[type] || type;
+}
+
+// 显示错误消息
+function showError(message) {
+    // 静默处理错误，不显示弹窗
+    console.error('错误: ' + message);
+}
+
+// 显示成功消息
+function showSuccess(message) {
+    // 静默处理成功，不显示弹窗
+    console.log('成功: ' + message);
+}
+
+// 显示添加设置模态框
+function showAddSettingModal() {
+    document.getElementById('settingModalTitle').textContent = '添加设置';
+    document.getElementById('settingForm').reset();
+    document.getElementById('settingId').value = '';
+    document.getElementById('settingCategory').value = currentCategory;
+    document.getElementById('settingKey').readOnly = false;
+
+    const modal = new bootstrap.Modal(document.getElementById('settingModal'));
+    modal.show();
+}
+
+// 编辑设置
+function editSetting(settingId) {
+    const setting = currentSettings.find(s => s.id === settingId);
+    if (!setting) {
+        showError('设置不存在');
+        return;
+    }
+
+    document.getElementById('settingModalTitle').textContent = '编辑设置';
+    document.getElementById('settingId').value = setting.id;
+    document.getElementById('settingCategory').value = setting.category;
+    document.getElementById('settingKey').value = setting.key;
+    document.getElementById('settingKey').readOnly = true;
+    document.getElementById('settingValueType').value = setting.value_type;
+    document.getElementById('settingValue').value = typeof setting.value === 'object' ? JSON.stringify(setting.value) : setting.value;
+    document.getElementById('settingDescription').value = setting.description || '';
+
+    updateValueInput();
+
+    const modal = new bootstrap.Modal(document.getElementById('settingModal'));
+    modal.show();
+}
+
+// 更新值输入框
+function updateValueInput() {
+    const valueType = document.getElementById('settingValueType').value;
+    const container = document.getElementById('valueInputContainer');
+    const currentValue = document.getElementById('settingValue').value;
+
+    let inputHtml = '';
+
+    switch (valueType) {
+        case 'bool':
+            inputHtml = `
+                <label for="settingValue" class="form-label">设置值 *</label>
+                <select class="form-select" id="settingValue" name="value" required>
+                    <option value="true" ${currentValue === 'true' ? 'selected' : ''}>true</option>
+                    <option value="false" ${currentValue === 'false' ? 'selected' : ''}>false</option>
+                </select>
+            `;
+            break;
+        case 'int':
+            inputHtml = `
+                <label for="settingValue" class="form-label">设置值 *</label>
+                <input type="number" class="form-control" id="settingValue" name="value" value="${currentValue}" required>
+            `;
+            break;
+        case 'json':
+            inputHtml = `
+                <label for="settingValue" class="form-label">设置值 * (JSON格式)</label>
+                <textarea class="form-control" id="settingValue" name="value" rows="4" required>${currentValue}</textarea>
+                <div class="form-text">请输入有效的JSON格式数据</div>
+            `;
+            break;
+        default:
+            inputHtml = `
+                <label for="settingValue" class="form-label">设置值 *</label>
+                <input type="text" class="form-control" id="settingValue" name="value" value="${currentValue}" required>
+            `;
+    }
+
+    container.innerHTML = inputHtml;
+}
+
+// 保存设置
+function saveSetting() {
+    const form = document.getElementById('settingForm');
+    const formData = new FormData(form);
+
+    const settingData = {
+        category: formData.get('category'),
+        key: formData.get('key'),
+        description: formData.get('description'),
+        reason: formData.get('reason') || '通过Web界面修改'
+    };
+
+    // 处理值
+    const valueType = formData.get('value_type');
+    let value = formData.get('value');
+
+    try {
+        switch (valueType) {
+            case 'int':
+                value = parseInt(value);
+                break;
+            case 'bool':
+                value = value === 'true';
+                break;
+            case 'json':
+                value = JSON.parse(value);
+                break;
+        }
+        settingData.value = value;
+    } catch (error) {
+        showError('值格式错误: ' + error.message);
+        return;
+    }
+
+    const settingId = formData.get('id');
+    const url = settingId ? `/admin/api/settings/${settingId}` : '/admin/api/settings';
+    const method = settingId ? 'PUT' : 'POST';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settingData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccess(settingId ? '设置更新成功' : '设置创建成功');
+            bootstrap.Modal.getInstance(document.getElementById('settingModal')).hide();
+            loadCategorySettings(currentCategory);
+        } else {
+            showError(data.error || '保存失败');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError('保存失败');
+    });
+}
+
+// 删除设置
+function deleteSetting(settingId, settingKey) {
+    // 直接删除，不需要确认对话框
+    const reason = '通过Web界面删除';
+
+    fetch(`/admin/api/settings/${settingId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reason: reason })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showSuccess('设置删除成功');
+            loadCategorySettings(currentCategory);
+        } else {
+            showError(data.error || '删除失败');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showError('删除失败');
+    });
+}
+
+// 显示设置历史
+function showHistory(category, key) {
+    document.getElementById('historyModalTitle').textContent = `设置历史: ${category}.${key}`;
+    document.getElementById('historyContent').innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">加载中...</span>
+            </div>
+        </div>
+    `;
+
+    const modal = new bootstrap.Modal(document.getElementById('historyModal'));
+    modal.show();
+
+    fetch(`/admin/api/settings/${category}/${key}/history`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                renderHistory(data.history || []);
+            } else {
+                document.getElementById('historyContent').innerHTML = `
+                    <div class="alert alert-danger">加载历史失败: ${data.error}</div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('historyContent').innerHTML = `
+                <div class="alert alert-danger">加载历史失败</div>
+            `;
+        });
+}
+
+// 渲染历史记录
+function renderHistory(history) {
+    const container = document.getElementById('historyContent');
+
+    if (!history || history.length === 0) {
+        container.innerHTML = '<div class="text-center text-muted">暂无历史记录</div>';
+        return;
+    }
+
+    let html = '<div class="timeline">';
+
+    history.forEach((record, index) => {
+        const time = new Date(record.created_at).toLocaleString();
+        const changeTypeLabel = {
+            'create': '创建',
+            'update': '更新',
+            'delete': '删除'
+        }[record.change_type] || record.change_type;
+
+        const changeTypeClass = {
+            'create': 'success',
+            'update': 'primary',
+            'delete': 'danger'
+        }[record.change_type] || 'secondary';
+
+        html += `
+            <div class="timeline-item mb-3">
+                <div class="d-flex">
+                    <div class="flex-shrink-0">
+                        <span class="badge bg-${changeTypeClass}">${changeTypeLabel}</span>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">${time}</h6>
+                                ${record.creator ? `<p class="card-text"><small class="text-muted">操作者: ${record.creator.username}</small></p>` : ''}
+                                ${record.reason ? `<p class="card-text">原因: ${record.reason}</p>` : ''}
+                                ${record.old_value ? `<p class="card-text"><strong>旧值:</strong> <code>${record.old_value}</code></p>` : ''}
+                                ${record.new_value ? `<p class="card-text"><strong>新值:</strong> <code>${record.new_value}</code></p>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+// 导出设置
+function exportSettings() {
+    fetch('/admin/api/settings/export')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const blob = new Blob([JSON.stringify(data.backup, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `settings-backup-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showSuccess('设置导出成功');
+            } else {
+                showError('导出失败: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('导出失败');
+        });
+}
+
+// 显示导入模态框
+function showImportModal() {
+    document.getElementById('importFile').value = '';
+    document.getElementById('overwriteExisting').checked = false;
+    document.getElementById('importPreview').style.display = 'none';
+    document.getElementById('importBtn').disabled = true;
+
+    const modal = new bootstrap.Modal(document.getElementById('importModal'));
+    modal.show();
+}
+
+// 预览导入
+function previewImport() {
+    const fileInput = document.getElementById('importFile');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        document.getElementById('importPreview').style.display = 'none';
+        document.getElementById('importBtn').disabled = true;
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+
+            // 验证备份格式
+            if (!backup.version || !backup.settings) {
+                throw new Error('无效的备份文件格式');
+            }
+
+            // 显示预览
+            const summary = `
+                <p><strong>备份版本:</strong> ${backup.version}</p>
+                <p><strong>备份时间:</strong> ${new Date(backup.timestamp).toLocaleString()}</p>
+                <p><strong>设置数量:</strong> ${Object.keys(backup.settings).length}</p>
+                <p><strong>分类数量:</strong> ${backup.categories ? backup.categories.length : 0}</p>
+            `;
+
+            document.getElementById('importSummary').innerHTML = summary;
+            document.getElementById('importPreview').style.display = 'block';
+            document.getElementById('importBtn').disabled = false;
+
+        } catch (error) {
+            showError('备份文件格式错误: ' + error.message);
+            document.getElementById('importPreview').style.display = 'none';
+            document.getElementById('importBtn').disabled = true;
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+// 导入设置
+function importSettings() {
+    const fileInput = document.getElementById('importFile');
+    const file = fileInput.files[0];
+    const overwrite = document.getElementById('overwriteExisting').checked;
+
+    if (!file) {
+        showError('请选择备份文件');
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+
+            fetch('/admin/api/settings/import', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    backup: backup,
+                    overwrite: overwrite
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showSuccess('设置导入成功');
+                    bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
+                    // 刷新当前分类
+                    if (currentCategory) {
+                        loadCategorySettings(currentCategory);
+                    }
+                } else {
+                    showError('导入失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError('导入失败');
+            });
+
+        } catch (error) {
+            showError('备份文件格式错误: ' + error.message);
+        }
+    };
+
+    reader.readAsText(file);
+}
+
+// 刷新设置
+function refreshSettings() {
+    if (currentCategory) {
+        loadCategorySettings(currentCategory);
+        showSuccess('设置已刷新');
+    }
+}
+</script>
+{{end}}

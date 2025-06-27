@@ -1,0 +1,312 @@
+{{define "user-form-content"}}
+<!-- 操作栏 -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">仪表板</a></li>
+                <li class="breadcrumb-item"><a href="/admin/users">用户管理</a></li>
+                <li class="breadcrumb-item active">{{if .IsEdit}}编辑用户{{else}}新建用户{{end}}</li>
+            </ol>
+        </nav>
+    </div>
+    <div>
+        <a href="/admin/users" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>
+            返回列表
+        </a>
+    </div>
+</div>
+
+<!-- 用户表单 -->
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-{{if .IsEdit}}pencil{{else}}person-plus{{end}}"></i>
+                    {{if .IsEdit}}编辑用户{{else}}新建用户{{end}}
+                </h5>
+            </div>
+            <div class="card-body">
+                {{if .Error}}
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    {{.Error}}
+                </div>
+                {{end}}
+
+                <form method="POST" action="{{if .IsEdit}}/admin/users/{{.User.ID}}/edit{{else}}/admin/users/new{{end}}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               placeholder="请输入用户名" required value="{{.Username_}}"
+                               {{if .IsEdit}}readonly{{end}}>
+                        {{if .IsEdit}}
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            用户名创建后不可修改
+                        </div>
+                        {{end}}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">邮箱 <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               placeholder="请输入邮箱地址" required value="{{.Email}}">
+                    </div>
+
+                    {{if not .IsEdit}}
+                    <div class="mb-3">
+                        <label for="password" class="form-label">密码 <span class="text-danger">*</span></label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="请输入密码" required minlength="6">
+                            <button type="button" class="btn btn-outline-secondary" onclick="togglePasswordVisibility()">
+                                <i class="bi bi-eye" id="password-eye"></i>
+                            </button>
+                        </div>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            密码长度至少6位
+                        </div>
+                    </div>
+                    {{end}}
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_admin" name="is_admin"
+                                   {{if .IsAdmin}}checked{{end}}>
+                            <label class="form-check-label" for="is_admin">
+                                <i class="bi bi-shield-check"></i>
+                                管理员权限
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            管理员可以访问管理后台和所有功能
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-{{if .IsEdit}}check{{else}}plus{{end}}-circle"></i>
+                            {{if .IsEdit}}更新用户{{else}}创建用户{{end}}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{if .IsEdit}}
+        <!-- 用户信息 -->
+        <div class="card shadow mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    用户信息
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">用户ID</small>
+                        <div class="font-monospace">{{.User.ID}}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">API密钥</small>
+                        <div class="font-monospace">{{.User.APIKey}}</div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">创建时间</small>
+                        <div>{{.User.CreatedAt.Format "2006-01-02 15:04:05"}}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">更新时间</small>
+                        <div>{{.User.UpdatedAt.Format "2006-01-02 15:04:05"}}</div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">状态</small>
+                        <div>
+                            {{if .User.IsActive}}
+                            <span class="badge bg-success">活跃</span>
+                            {{else}}
+                            <span class="badge bg-secondary">已禁用</span>
+                            {{end}}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">权限</small>
+                        <div>
+                            {{if .User.IsAdmin}}
+                            <span class="badge bg-danger">管理员</span>
+                            {{else}}
+                            <span class="badge bg-secondary">普通用户</span>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 危险操作 -->
+        <div class="card shadow mt-4 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h6 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    危险操作
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>重置密码</h6>
+                        <p class="text-muted small">为用户重置密码，新密码将通过邮件发送</p>
+                        <button type="button" class="btn btn-warning btn-sm" onclick="resetPassword('{{.User.ID}}')">
+                            <i class="bi bi-key"></i>
+                            重置密码
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>删除用户</h6>
+                        <p class="text-muted small">永久删除用户账户，此操作不可恢复</p>
+                        <button type="button" class="btn btn-danger btn-sm" onclick="deleteUser('{{.User.ID}}')">
+                            <i class="bi bi-trash"></i>
+                            删除用户
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+{{end}}
+
+{{define "user-form-scripts"}}
+<script>
+function togglePasswordVisibility() {
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('password-eye');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        eyeIcon.className = 'bi bi-eye-slash';
+    } else {
+        passwordInput.type = 'password';
+        eyeIcon.className = 'bi bi-eye';
+    }
+}
+
+function resetPassword(userId) {
+    if (confirm('确定要重置用户密码吗？新密码将显示在弹窗中。')) {
+        fetch(`/admin/api/users/${userId}/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`密码重置成功！\n新密码：${data.new_password}\n\n请将新密码告知用户，并建议用户尽快修改密码。`);
+            } else {
+                alert('密码重置失败: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('密码重置失败: ' + error);
+        });
+    }
+}
+
+function deleteUser(userId) {
+    if (confirm('确定要删除此用户吗？\n\n此操作将：\n- 永久删除用户账户\n- 删除用户的所有内容\n- 删除相关的分析数据\n\n此操作不可恢复！')) {
+        if (confirm('请再次确认：您真的要删除此用户及其所有数据吗？')) {
+            fetch(`/admin/api/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('用户删除成功，即将返回用户列表');
+                    window.location.href = '/admin/users';
+                } else {
+                    alert('删除失败: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('删除失败: ' + error);
+            });
+        }
+    }
+}
+
+// 表单验证
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    
+    form.addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // 验证用户名
+        if (usernameInput.value.trim().length < 3) {
+            showFieldError(usernameInput, '用户名长度至少3位');
+            isValid = false;
+        } else {
+            clearFieldError(usernameInput);
+        }
+        
+        // 验证邮箱
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailInput.value)) {
+            showFieldError(emailInput, '请输入有效的邮箱地址');
+            isValid = false;
+        } else {
+            clearFieldError(emailInput);
+        }
+        
+        // 验证密码（仅在新建用户时）
+        if (passwordInput && passwordInput.value.length < 6) {
+            showFieldError(passwordInput, '密码长度至少6位');
+            isValid = false;
+        } else if (passwordInput) {
+            clearFieldError(passwordInput);
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+        }
+    });
+});
+
+function showFieldError(field, message) {
+    clearFieldError(field);
+    field.classList.add('is-invalid');
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'invalid-feedback';
+    errorDiv.textContent = message;
+    field.parentNode.appendChild(errorDiv);
+}
+
+function clearFieldError(field) {
+    field.classList.remove('is-invalid');
+    const errorDiv = field.parentNode.querySelector('.invalid-feedback');
+    if (errorDiv) {
+        errorDiv.remove();
+    }
+}
+</script>
+{{end}}

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - AnyWebsites 管理后台</title>
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/css/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 480px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo-section {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .logo-icon {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .logo-title {
+            color: #333;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .logo-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+        }
+
+        .form-floating {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 1.2rem 1.5rem;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            height: auto;
+        }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .form-floating > label {
+            padding: 1.2rem 1.5rem;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 1.2rem 2rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .form-check {
+            margin: 1.5rem 0;
+        }
+
+        .form-check-input:checked {
+            background-color: #667eea;
+            border-color: #667eea;
+        }
+
+        .form-check-label {
+            color: #555;
+            font-weight: 500;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 2.5rem 0 2rem 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e9ecef, transparent);
+        }
+
+        .divider span {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 0 1.5rem;
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .default-accounts {
+            background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+            border: none;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border-left: 4px solid #667eea;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .accounts-header {
+            display: flex;
+            align-items: center;
+            color: #667eea;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .account-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .account-item {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(102, 126, 234, 0.15);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .account-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.2);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+
+        .account-icon {
+            color: #667eea;
+            font-size: 1.8rem;
+            flex-shrink: 0;
+        }
+
+        .account-info {
+            flex: 1;
+        }
+
+        .account-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.95rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .account-username {
+            color: #666;
+            font-size: 0.85rem;
+            font-family: 'Courier New', monospace;
+        }
+
+        .account-action {
+            color: #667eea;
+            font-size: 1.2rem;
+            opacity: 0.6;
+            transition: all 0.3s ease;
+        }
+
+        .account-item:hover .account-action {
+            opacity: 1;
+            transform: translateX(3px);
+        }
+
+        .security-warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            text-align: center;
+            color: #856404;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .security-warning i {
+            color: #ffc107;
+        }
+
+        .security-note {
+            text-align: center;
+            margin-top: 2rem;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .security-note i {
+            color: #28a745;
+            margin-right: 0.5rem;
+        }
+
+        /* API 文档链接样式 */
+        .api-docs-section {
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .api-docs-header {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .api-docs-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .api-doc-link {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            text-decoration: none !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            gap: 1rem;
+            min-height: 70px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .api-doc-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .api-doc-link:hover .api-doc-title {
+            color: white;
+        }
+
+        .api-doc-link:hover .api-doc-desc {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .api-doc-icon {
+            font-size: 1.5rem;
+            color: #60a5fa;
+            min-width: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .api-doc-info {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            min-width: 0 !important; /* 确保文字不会被截断 */
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .api-doc-title {
+            font-weight: 600 !important;
+            font-size: 1rem !important;
+            margin-bottom: 0.3rem !important;
+            color: #ffffff !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .api-doc-desc {
+            font-size: 0.85rem !important;
+            color: rgba(255, 255, 255, 0.9) !important;
+            line-height: 1.3 !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .api-doc-arrow {
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.6);
+            transition: transform 0.3s ease;
+        }
+
+        .api-doc-link:hover .api-doc-arrow {
+            transform: translateX(2px);
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        /* 强制显示文字 - 调试用 */
+        .api-doc-link * {
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        .api-doc-link .api-doc-title,
+        .api-doc-link .api-doc-desc {
+            color: white !important;
+            display: block !important;
+            font-family: inherit !important;
+        }
+
+        @media (max-width: 576px) {
+            .login-container {
+                padding: 2rem 1.5rem;
+                margin: 10px;
+                max-width: 100%;
+            }
+
+            .account-item {
+                padding: 0.8rem 1rem;
+                gap: 0.8rem;
+            }
+
+            .account-icon {
+                font-size: 1.5rem;
+            }
+
+            .logo-title {
+                font-size: 1.6rem;
+            }
+
+            .logo-icon {
+                font-size: 3.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo-section">
+            <i class="bi bi-globe logo-icon"></i>
+            <h2 class="logo-title">AnyWebsites</h2>
+            <p class="logo-subtitle">管理后台登录</p>
+        </div>
+
+        {{if .Error}}
+        <div class="alert alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            {{.Error}}
+        </div>
+        {{end}}
+
+        <form method="POST" action="/admin/login">
+            <div class="form-floating">
+                <input type="text" class="form-control" id="username" name="username"
+                       placeholder="请输入用户名" required value="{{.Username}}">
+                <label for="username">
+                    <i class="bi bi-person me-2"></i>用户名
+                </label>
+            </div>
+
+            <div class="form-floating">
+                <input type="password" class="form-control" id="password" name="password"
+                       placeholder="请输入密码" required>
+                <label for="password">
+                    <i class="bi bi-lock me-2"></i>密码
+                </label>
+            </div>
+
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                <label class="form-check-label" for="remember">
+                    记住我
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-login">
+                <i class="bi bi-box-arrow-in-right me-2"></i>
+                登录
+            </button>
+        </form>
+
+        <div class="divider">
+            <span>默认管理员账户</span>
+        </div>
+
+        <div class="default-accounts">
+            <div class="accounts-header">
+                <i class="bi bi-info-circle me-2"></i>
+                <span>快速登录</span>
+            </div>
+
+            <div class="account-list">
+                <div class="account-item" onclick="fillCredentials('admin', 'Google@google')">
+                    <div class="account-icon">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div class="account-info">
+                        <div class="account-name">管理员</div>
+                        <div class="account-username">admin</div>
+                    </div>
+                    <div class="account-action">
+                        <i class="bi bi-arrow-right-circle"></i>
+                    </div>
+                </div>
+
+                <div class="account-item" onclick="fillCredentials('yingcai', 'Yingcai@yingcai')">
+                    <div class="account-icon">
+                        <i class="bi bi-person-circle"></i>
+                    </div>
+                    <div class="account-info">
+                        <div class="account-name">应才</div>
+                        <div class="account-username">yingcai</div>
+                    </div>
+                    <div class="account-action">
+                        <i class="bi bi-arrow-right-circle"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="security-warning">
+                <i class="bi bi-shield-exclamation me-2"></i>
+                <span>生产环境请及时修改默认密码</span>
+            </div>
+        </div>
+
+        <div class="security-note">
+            <i class="bi bi-shield-check"></i>
+            安全登录 · 数据加密 · 隐私保护
+        </div>
+
+        <!-- API 文档链接 -->
+        <div class="api-docs-section">
+            <div class="api-docs-header">
+                <i class="bi bi-book me-2"></i>
+                <span>开发者资源</span>
+            </div>
+            <div class="api-docs-links">
+                <a href="/docs/swagger-ui.html" target="_blank" class="api-doc-link">
+                    <i class="bi bi-code-square" style="font-size: 1.5rem; color: #60a5fa; margin-right: 1rem;"></i>
+                    <span style="color: white; font-size: 1rem; font-weight: 600;">API 文档</span>
+                    <span style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-left: 0.5rem;">- Swagger UI 交互式文档</span>
+                    <i class="bi bi-box-arrow-up-right" style="margin-left: auto; color: rgba(255,255,255,0.6);"></i>
+                </a>
+                <a href="/docs/README.md" target="_blank" class="api-doc-link">
+                    <i class="bi bi-file-text" style="font-size: 1.5rem; color: #60a5fa; margin-right: 1rem;"></i>
+                    <span style="color: white; font-size: 1rem; font-weight: 600;">使用指南</span>
+                    <span style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-left: 0.5rem;">- 详细的 API 使用说明</span>
+                    <i class="bi bi-box-arrow-up-right" style="margin-left: auto; color: rgba(255,255,255,0.6);"></i>
+                </a>
+                <a href="/docs/AnyWebsites-API.postman_collection.json" target="_blank" class="api-doc-link">
+                    <i class="bi bi-download" style="font-size: 1.5rem; color: #60a5fa; margin-right: 1rem;"></i>
+                    <span style="color: white; font-size: 1rem; font-weight: 600;">Postman 集合</span>
+                    <span style="color: rgba(255,255,255,0.8); font-size: 0.85rem; margin-left: 0.5rem;">- 导入 Postman 测试 API</span>
+                    <i class="bi bi-box-arrow-up-right" style="margin-left: auto; color: rgba(255,255,255,0.6);"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function fillCredentials(username, password) {
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+
+            // 填充用户名和密码
+            usernameInput.value = username;
+            passwordInput.value = password;
+
+            // 添加填充动画效果
+            usernameInput.style.transform = 'scale(1.02)';
+            passwordInput.style.transform = 'scale(1.02)';
+
+            setTimeout(() => {
+                usernameInput.style.transform = 'scale(1)';
+                passwordInput.style.transform = 'scale(1)';
+            }, 200);
+
+            // 显示成功提示
+            showToast('凭据已填充', 'success');
+
+            // 聚焦到登录按钮
+            setTimeout(() => {
+                document.querySelector('.btn-login').focus();
+            }, 300);
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            const bgClass = type === 'success' ? 'alert-success' : 'alert-info';
+            const icon = type === 'success' ? 'bi-check-circle' : 'bi-info-circle';
+
+            toast.className = `position-fixed top-0 start-50 translate-middle-x mt-3 alert ${bgClass} alert-dismissible fade show`;
+            toast.style.zIndex = '9999';
+            toast.innerHTML = `
+                <i class="bi ${icon} me-2"></i>
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.appendChild(toast);
+
+            // 3秒后自动移除
+            setTimeout(() => {
+                if (toast.parentNode) {
+                    toast.parentNode.removeChild(toast);
+                }
+            }, 3000);
+        }
+
+        // 添加输入框焦点动画
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'translateY(-2px)';
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'translateY(0)';
+            });
+        });
+
+        // 添加键盘快捷键支持
+        document.addEventListener('keydown', function(e) {
+            // Ctrl/Cmd + 1 填充第一个账户
+            if ((e.ctrlKey || e.metaKey) && e.key === '1') {
+                e.preventDefault();
+                fillCredentials('admin', 'Google@google');
+            }
+            // Ctrl/Cmd + 2 填充第二个账户
+            if ((e.ctrlKey || e.metaKey) && e.key === '2') {
+                e.preventDefault();
+                fillCredentials('yingcai', 'Yingcai@yingcai');
+            }
+        });
+    </script>
+</body>
+</html>

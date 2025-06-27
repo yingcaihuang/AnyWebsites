@@ -1,0 +1,488 @@
+{
+  "info": {
+    "name": "AnyWebsites API",
+    "description": "AnyWebsites HTML 页面托管服务 API 集合",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://localhost:8443",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "api_key",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "content_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 认证接口",
+      "item": [
+        {
+          "name": "用户注册",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "用户登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', response.access_token);",
+                  "    pm.collectionVariables.set('user_id', response.user.id);",
+                  "    pm.collectionVariables.set('api_key', response.user.api_key);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "刷新令牌",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📄 内容管理",
+      "item": [
+        {
+          "name": "上传 HTML 内容",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('content_id', response.content.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"我的测试页面\",\n  \"description\": \"这是一个测试页面\",\n  \"html_content\": \"<html><head><title>测试</title></head><body><h1>Hello World!</h1><p>这是一个测试页面。</p></body></html>\",\n  \"is_public\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/content/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content", "upload"]
+            }
+          }
+        },
+        {
+          "name": "获取内容列表",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/content?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "获取内容详情",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/content/{{content_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content", "{{content_id}}"]
+            }
+          }
+        },
+        {
+          "name": "更新内容",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"更新后的标题\",\n  \"description\": \"更新后的描述\",\n  \"html_content\": \"<html><head><title>更新</title></head><body><h1>Updated!</h1><p>内容已更新。</p></body></html>\",\n  \"is_public\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/content/{{content_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content", "{{content_id}}"]
+            }
+          }
+        },
+        {
+          "name": "删除内容",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/api/content/{{content_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "content", "{{content_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🌐 内容访问",
+      "item": [
+        {
+          "name": "访问 HTML 页面",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/view/{{content_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["view", "{{content_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🏥 健康检查",
+      "item": [
+        {
+          "name": "服务器健康检查",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 管理后台 - 用户管理",
+      "auth": {
+        "type": "noauth"
+      },
+      "item": [
+        {
+          "name": "获取用户详情",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/api/users/{{user_id}}/details",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "users", "{{user_id}}", "details"]
+            }
+          }
+        },
+        {
+          "name": "切换用户状态",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/admin/api/users/{{user_id}}/toggle-status",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "users", "{{user_id}}", "toggle-status"]
+            }
+          }
+        },
+        {
+          "name": "切换管理员权限",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/admin/api/users/{{user_id}}/toggle-admin",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "users", "{{user_id}}", "toggle-admin"]
+            }
+          }
+        },
+        {
+          "name": "重置用户API密钥",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/admin/api/users/{{user_id}}/reset-api-key",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "users", "{{user_id}}", "reset-api-key"]
+            }
+          }
+        },
+        {
+          "name": "重置用户密码",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"new_password\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/api/users/{{user_id}}/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "users", "{{user_id}}", "reset-password"]
+            }
+          }
+        },
+        {
+          "name": "删除用户",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/admin/api/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "users", "{{user_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 管理后台 - 内容管理",
+      "auth": {
+        "type": "noauth"
+      },
+      "item": [
+        {
+          "name": "删除内容（管理员）",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{base_url}}/admin/api/contents/{{content_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "contents", "{{content_id}}"]
+            }
+          }
+        },
+        {
+          "name": "恢复内容",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/admin/api/contents/{{content_id}}/restore",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "contents", "{{content_id}}", "restore"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📈 管理后台 - 统计分析",
+      "auth": {
+        "type": "noauth"
+      },
+      "item": [
+        {
+          "name": "获取地理位置统计",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/api/geoip-stats?range=7d",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "geoip-stats"],
+              "query": [
+                {
+                  "key": "range",
+                  "value": "7d"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚙️ 管理后台 - 系统设置",
+      "auth": {
+        "type": "noauth"
+      },
+      "item": [
+        {
+          "name": "获取所有设置",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/api/settings",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "settings"]
+            }
+          }
+        },
+        {
+          "name": "获取设置分类",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/api/settings/categories",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "settings", "categories"]
+            }
+          }
+        },
+        {
+          "name": "按分类获取设置",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/api/settings/category/server",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "settings", "category", "server"]
+            }
+          }
+        },
+        {
+          "name": "创建设置",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"category\": \"test\",\n  \"key\": \"test_setting\",\n  \"value\": \"test_value\",\n  \"description\": \"测试设置\",\n  \"reason\": \"创建测试设置\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/api/settings",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "settings"]
+            }
+          }
+        },
+        {
+          "name": "导出设置",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/admin/api/settings/export",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "settings", "export"]
+            }
+          }
+        },
+        {
+          "name": "重载配置",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/admin/api/settings/reload",
+              "host": ["{{base_url}}"],
+              "path": ["admin", "api", "settings", "reload"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

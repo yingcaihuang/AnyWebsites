@@ -1,0 +1,499 @@
+{{define "content"}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>用户计划管理</h2>
+                <a href="/admin/plan-stats" class="btn btn-info">
+                    <i class="fas fa-chart-bar"></i> 计划统计
+                </a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">用户订阅列表</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>用户名</th>
+                                    <th>邮箱</th>
+                                    <th>当前计划</th>
+                                    <th>计划价格</th>
+                                    <th>订阅状态</th>
+                                    <th>开始时间</th>
+                                    <th>过期时间</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {{range .Users}}
+                                <tr>
+                                    <td>
+                                        <strong>{{.Username}}</strong>
+                                        {{if .IsAdmin}}
+                                            <span class="badge bg-danger ms-1">管理员</span>
+                                        {{end}}
+                                    </td>
+                                    <td>{{.Email}}</td>
+                                    <td>
+                                        {{if .Subscription}}
+                                            <span class="badge bg-{{if eq .Subscription.PlanType "community"}}secondary{{else if eq .Subscription.PlanType "developer"}}primary{{else if eq .Subscription.PlanType "pro"}}success{{else if eq .Subscription.PlanType "max"}}warning{{else}}danger{{end}}">
+                                                {{if eq .Subscription.PlanType "community"}}Community Plan{{else if eq .Subscription.PlanType "developer"}}Developer Plan{{else if eq .Subscription.PlanType "pro"}}Pro Plan{{else if eq .Subscription.PlanType "max"}}Max Plan{{else}}Enterprise Plan{{end}}
+                                            </span>
+                                        {{else}}
+                                            <span class="badge bg-secondary">Community Plan</span>
+                                        {{end}}
+                                    </td>
+                                    <td>
+                                        {{if .Subscription}}
+                                            {{if eq .Subscription.PlanType "community"}}
+                                                免费
+                                            {{else if eq .Subscription.PlanType "developer"}}
+                                                $50.00/月
+                                            {{else if eq .Subscription.PlanType "pro"}}
+                                                $100.00/月
+                                            {{else if eq .Subscription.PlanType "max"}}
+                                                $250.00/月
+                                            {{else}}
+                                                联系销售
+                                            {{end}}
+                                        {{else}}
+                                            免费
+                                        {{end}}
+                                    </td>
+                                    <td>
+                                        {{if .Subscription}}
+                                            <span class="badge bg-{{if eq .Subscription.Status "active"}}success{{else if eq .Subscription.Status "expired"}}danger{{else if eq .Subscription.Status "cancelled"}}warning{{else}}secondary{{end}}">
+                                                {{.Subscription.Status}}
+                                            </span>
+                                        {{else}}
+                                            <span class="badge bg-success">active</span>
+                                        {{end}}
+                                    </td>
+                                    <td>
+                                        {{if .Subscription}}
+                                            {{.Subscription.StartedAt.Format "2006-01-02 15:04"}}
+                                        {{else}}
+                                            {{.CreatedAt.Format "2006-01-02 15:04"}}
+                                        {{end}}
+                                    </td>
+                                    <td>
+                                        {{if .Subscription}}
+                                            {{if .Subscription.ExpiresAt}}
+                                                {{.Subscription.ExpiresAt.Format "2006-01-02 15:04"}}
+                                            {{else}}
+                                                <span class="text-muted">永不过期</span>
+                                            {{end}}
+                                        {{else}}
+                                            <span class="text-muted">永不过期</span>
+                                        {{end}}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a href="/admin/user-plans/{{.ID}}/edit" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-edit"></i> 编辑计划
+                                            </a>
+                                            <button type="button" class="btn btn-sm btn-outline-success" onclick="showUpgradeModal('{{.ID}}', '{{.Username}}', '{{if .Subscription}}{{.Subscription.PlanType}}{{else}}community{{end}}')">
+                                                <i class="fas fa-arrow-up"></i> 升级
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-warning" onclick="showDowngradeModal('{{.ID}}', '{{.Username}}', '{{if .Subscription}}{{.Subscription.PlanType}}{{else}}community{{end}}')">
+                                                <i class="fas fa-arrow-down"></i> 降级
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-outline-info" onclick="showUserDetails('{{.ID}}')">
+                                                <i class="fas fa-info-circle"></i> 详情
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {{else}}
+                                <tr>
+                                    <td colspan="8" class="text-center text-muted">暂无用户数据</td>
+                                </tr>
+                                {{end}}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 用户详情模态框 -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">用户详情</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="userDetailsContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">加载中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 升级计划模态框 -->
+<div class="modal fade" id="upgradeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">升级用户计划</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="upgradeForm">
+                    <div class="mb-3">
+                        <label class="form-label">用户</label>
+                        <input type="text" class="form-control" id="upgradeUsername" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">当前计划</label>
+                        <input type="text" class="form-control" id="upgradeCurrentPlan" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="upgradeNewPlan" class="form-label">新计划</label>
+                        <select class="form-select" id="upgradeNewPlan" required>
+                            <option value="">请选择计划</option>
+                            <option value="developer">开发者版 ($50/月)</option>
+                            <option value="pro">专业版 ($100/月)</option>
+                            <option value="max">旗舰版 ($250/月)</option>
+                            <option value="enterprise">企业版 (联系销售)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="upgradeExpiresAt" class="form-label">过期时间 (可选)</label>
+                        <input type="datetime-local" class="form-control" id="upgradeExpiresAt">
+                        <div class="form-text">留空表示永不过期</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-success" onclick="performUpgrade()">确认升级</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 降级计划模态框 -->
+<div class="modal fade" id="downgradeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">降级用户计划</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="downgradeForm">
+                    <div class="mb-3">
+                        <label class="form-label">用户</label>
+                        <input type="text" class="form-control" id="downgradeUsername" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">当前计划</label>
+                        <input type="text" class="form-control" id="downgradeCurrentPlan" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="downgradeNewPlan" class="form-label">新计划</label>
+                        <select class="form-select" id="downgradeNewPlan" required>
+                            <option value="">请选择计划</option>
+                            <option value="community">社区版 (免费)</option>
+                            <option value="developer">开发者版 ($50/月)</option>
+                            <option value="pro">专业版 ($100/月)</option>
+                        </select>
+                    </div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>注意：</strong>降级可能会影响用户的现有内容保留期限。
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-warning" onclick="performDowngrade()">确认降级</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentUserId = '';
+function showUserDetails(userId) {
+    const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+    const content = document.getElementById('userDetailsContent');
+    
+    // 显示加载状态
+    content.innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">加载中...</span>
+            </div>
+        </div>
+    `;
+    
+    modal.show();
+    
+    // 获取用户详情
+    fetch(`/admin/api/users/${userId}/details`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const user = data.user;
+                const stats = data.stats;
+                const recentContents = data.recent_contents;
+                
+                content.innerHTML = `
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>基本信息</h6>
+                            <table class="table table-sm">
+                                <tr><td>用户名:</td><td><strong>${user.username}</strong></td></tr>
+                                <tr><td>邮箱:</td><td>${user.email}</td></tr>
+                                <tr><td>API密钥:</td><td><code>${user.api_key}</code></td></tr>
+                                <tr><td>状态:</td><td><span class="badge bg-${user.is_active ? 'success' : 'danger'}">${user.is_active ? '活跃' : '禁用'}</span></td></tr>
+                                <tr><td>管理员:</td><td><span class="badge bg-${user.is_admin ? 'danger' : 'secondary'}">${user.is_admin ? '是' : '否'}</span></td></tr>
+                                <tr><td>注册时间:</td><td>${new Date(user.created_at).toLocaleString()}</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <h6>统计信息</h6>
+                            <table class="table table-sm">
+                                <tr><td>总内容数:</td><td><strong>${stats.total_contents}</strong></td></tr>
+                                <tr><td>活跃内容数:</td><td><strong>${stats.active_contents}</strong></td></tr>
+                            </table>
+                            
+                            <h6>最近内容</h6>
+                            <div class="list-group list-group-flush">
+                                ${recentContents.map(content => `
+                                    <div class="list-group-item">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">${content.title}</h6>
+                                            <small>${new Date(content.created_at).toLocaleDateString()}</small>
+                                        </div>
+                                        <p class="mb-1">${content.description || '无描述'}</p>
+                                        <small class="text-muted">访问量: ${content.view_count || 0}</small>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        加载用户详情失败: ${data.error}
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            content.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    网络错误: ${error.message}
+                </div>
+            `;
+        });
+}
+
+function showUpgradeModal(userId, username, currentPlan) {
+    currentUserId = userId;
+    document.getElementById('upgradeUsername').value = username;
+    document.getElementById('upgradeCurrentPlan').value = getPlanDisplayName(currentPlan);
+
+    // 根据当前计划过滤可升级的选项
+    const upgradeSelect = document.getElementById('upgradeNewPlan');
+    const options = upgradeSelect.querySelectorAll('option');
+    options.forEach(option => {
+        if (option.value && isPlanUpgrade(currentPlan, option.value)) {
+            option.style.display = 'block';
+        } else if (option.value) {
+            option.style.display = 'none';
+        }
+    });
+
+    const modal = new bootstrap.Modal(document.getElementById('upgradeModal'));
+    modal.show();
+}
+
+function showDowngradeModal(userId, username, currentPlan) {
+    currentUserId = userId;
+    document.getElementById('downgradeUsername').value = username;
+    document.getElementById('downgradeCurrentPlan').value = getPlanDisplayName(currentPlan);
+
+    // 根据当前计划过滤可降级的选项
+    const downgradeSelect = document.getElementById('downgradeNewPlan');
+    const options = downgradeSelect.querySelectorAll('option');
+    options.forEach(option => {
+        if (option.value && isPlanDowngrade(currentPlan, option.value)) {
+            option.style.display = 'block';
+        } else if (option.value) {
+            option.style.display = 'none';
+        }
+    });
+
+    const modal = new bootstrap.Modal(document.getElementById('downgradeModal'));
+    modal.show();
+}
+
+function getPlanDisplayName(planType) {
+    const planNames = {
+        'community': '社区版 (免费)',
+        'developer': '开发者版 ($50/月)',
+        'pro': '专业版 ($100/月)',
+        'max': '旗舰版 ($250/月)',
+        'enterprise': '企业版 (联系销售)'
+    };
+    return planNames[planType] || planType;
+}
+
+function isPlanUpgrade(currentPlan, newPlan) {
+    const planLevels = {
+        'community': 0,
+        'developer': 1,
+        'pro': 2,
+        'max': 3,
+        'enterprise': 4
+    };
+    return planLevels[newPlan] > planLevels[currentPlan];
+}
+
+function isPlanDowngrade(currentPlan, newPlan) {
+    const planLevels = {
+        'community': 0,
+        'developer': 1,
+        'pro': 2,
+        'max': 3,
+        'enterprise': 4
+    };
+    return planLevels[newPlan] < planLevels[currentPlan];
+}
+
+function performUpgrade() {
+    const newPlan = document.getElementById('upgradeNewPlan').value;
+    const expiresAt = document.getElementById('upgradeExpiresAt').value;
+
+    if (!newPlan) {
+        alert('请选择新计划');
+        return;
+    }
+
+    const data = {
+        plan_type: newPlan
+    };
+
+    if (expiresAt) {
+        data.expires_at = new Date(expiresAt).toISOString();
+    }
+
+    fetch(`/admin/user-plans/${currentUserId}/upgrade`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.error || '升级失败');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('升级失败');
+    });
+}
+
+function performDowngrade() {
+    const newPlan = document.getElementById('downgradeNewPlan').value;
+
+    if (!newPlan) {
+        alert('请选择新计划');
+        return;
+    }
+
+    if (!confirm('确定要降级用户计划吗？这可能会影响用户的现有内容。')) {
+        return;
+    }
+
+    const data = {
+        plan_type: newPlan
+    };
+
+    fetch(`/admin/user-plans/${currentUserId}/downgrade`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert(data.error || '降级失败');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('降级失败');
+    });
+}
+</script>
+
+<style>
+.table th {
+    border-top: none;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.btn-group .btn {
+    margin-right: 2px;
+}
+
+.btn-group .btn:last-child {
+    margin-right: 0;
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+.list-group-item:first-child {
+    border-top: none;
+}
+
+.list-group-item:last-child {
+    border-bottom: none;
+}
+</style>
+{{end}}

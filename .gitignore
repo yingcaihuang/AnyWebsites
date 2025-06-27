@@ -1,0 +1,125 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+main
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+# vendor/
+
+# Go workspace file
+go.work
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Environment files
+.env
+.env.local
+.env.production
+
+# Docker volumes and data
+docker-data/
+postgres-data/
+redis-data/
+
+# Uploads directory
+uploads/*
+!uploads/.gitkeep
+
+# SSL certificates (keep examples)
+ssl/*.pem
+ssl/*.key
+ssl/*.crt
+!ssl/README.md
+
+# Backup files
+*.bak
+*.backup
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Node modules (if any frontend tools)
+node_modules/
+
+# Build artifacts
+dist/
+build/
+
+# Coverage reports
+coverage.txt
+coverage.html
+
+# Air live reload
+.air.toml
+
+# Local configuration overrides
+config.local.yaml
+config.local.yml
+
+# GeoIP database files (these are large)
+*.mmdb
+*.dat
+geoip/*.mmdb
+geoip/*.dat
+
+# API keys and secrets
+*.key
+*.pem
+*.p12
+secrets/
+
+# Test data
+testdata/
+
+# Documentation build artifacts
+docs/_build/
+docs/.doctrees/
+
+# MacOS
+.AppleDouble
+.LSOverride
+
+# Windows
+desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*

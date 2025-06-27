@@ -1,0 +1,1833 @@
+openapi: 3.0.3
+info:
+  title: AnyWebsites API
+  description: |
+    # AnyWebsites HTML 页面托管服务 API
+
+    AnyWebsites 是一个功能强大的 HTML 页面托管服务平台，基于 Golang 开发，提供完整的 RESTful API 接口。
+    本平台专为开发者和内容创作者设计，支持快速部署、管理和分析 HTML 页面。
+
+    ## 🌟 核心功能
+
+    ### 📄 内容管理
+    - **HTML 页面上传**: 支持直接上传 HTML 内容，自动生成访问链接
+    - **内容 CRUD 操作**: 完整的创建、读取、更新、删除功能
+    - **访问权限控制**: 支持公开和私有内容，可设置访问码
+    - **过期时间管理**: 可设置内容的自动过期时间
+
+    ### 🔐 用户认证系统
+    - **多重认证方式**: 支持 JWT Token、API Key、会话认证
+    - **用户注册登录**: 完整的用户管理系统
+    - **权限分级管理**: 普通用户和管理员权限区分
+    - **API 密钥管理**: 每个用户独有的 API 密钥
+
+    ### 📊 统计分析功能
+    - **访问统计**: 实时记录页面访问次数和独立访客
+    - **地理位置分析**: 基于 MaxMind GeoIP2 的访问者地理分布
+    - **流量趋势**: 时间维度的访问量变化趋势
+    - **用户行为**: 访问来源、用户代理等详细信息
+
+    ### ⚙️ 系统管理
+    - **动态配置**: 支持运行时配置修改和热重载
+    - **用户管理**: 管理员可管理所有用户账户
+    - **内容审核**: 管理员可管理和审核所有内容
+    - **系统监控**: 健康检查和系统状态监控
+
+    ## 🛡️ 安全特性
+
+    - **数据加密**: 所有敏感数据采用加密存储
+    - **HTTPS 支持**: 全站 HTTPS 加密传输
+    - **访问控制**: 基于角色的访问控制 (RBAC)
+    - **防护机制**: 防止恶意攻击和滥用
+
+    ## 🚀 技术架构
+
+    - **后端框架**: Gin (Golang)
+    - **数据库**: PostgreSQL + Redis
+    - **认证**: JWT + Session
+    - **部署**: Docker + Nginx
+    - **监控**: 内置健康检查和日志系统
+
+    ## 📋 API 分类说明
+
+    ### 🔐 认证接口 (Authentication)
+    处理用户注册、登录和令牌管理的核心接口。
+
+    ### 📄 内容管理 (Content Management)
+    用户上传、管理和操作 HTML 内容的主要接口。
+
+    ### 🌐 内容访问 (Content Access)
+    公开访问已发布 HTML 页面的接口。
+
+    ### 👥 管理后台接口 (Admin APIs)
+    管理员专用的系统管理接口，包括用户管理、内容管理、统计分析和系统设置。
+
+    ## 🔑 认证方式详解
+
+    ### Bearer Token (JWT)
+    用于用户 API 访问的主要认证方式：
+    ```
+    Authorization: Bearer <your-jwt-token>
+    ```
+
+    ### API Key
+    通过请求头或查询参数传递的 API 密钥：
+    ```
+    X-API-Key: <your-api-key>
+    # 或
+    ?api_key=<your-api-key>
+    ```
+
+    ### Admin Session
+    管理后台会话认证，通过 Cookie 传递：
+    ```
+    Cookie: admin_session=<session-id>
+    ```
+
+    ## 📞 技术支持
+
+    如有问题或需要技术支持，请联系我们：
+    - 📧 邮箱: support@anywebsites.com
+    - 📖 文档: 查看完整的 API 使用指南
+    - 🔧 工具: 提供 Postman 集合和代码示例
+  version: 1.0.0
+  contact:
+    name: AnyWebsites API Support
+    email: support@anywebsites.com
+    url: https://anywebsites.com/support
+  license:
+    name: MIT License
+    url: https://opensource.org/licenses/MIT
+  termsOfService: https://anywebsites.com/terms
+
+servers:
+  - url: https://localhost:8443
+    description: 本地开发服务器 (HTTPS)
+  - url: http://localhost:8080
+    description: 本地开发服务器 (HTTP)
+
+tags:
+  - name: Health
+    description: 健康检查
+  - name: Authentication
+    description: 用户认证相关接口
+  - name: Content Management
+    description: 内容管理相关接口
+  - name: Content Access
+    description: 内容访问相关接口
+  - name: Admin - Dashboard
+    description: 管理后台仪表板
+  - name: Admin - Content Management
+    description: 管理后台内容管理
+  - name: Admin - User Management
+    description: 管理后台用户管理
+  - name: Admin - Analytics
+    description: 管理后台统计分析
+  - name: Admin - Settings
+    description: 管理后台系统设置
+
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: 健康检查
+      description: 检查服务器状态
+      responses:
+        '200':
+          description: 服务器正常
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+
+  /api/auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: 用户注册
+      description: |
+        创建新用户账户。注册成功后，用户将获得：
+        - 唯一的用户 ID
+        - 自动生成的 API 密钥
+        - 默认的用户权限
+
+        **注意事项：**
+        - 用户名必须唯一，长度 3-50 字符
+        - 邮箱地址必须有效且唯一
+        - 密码最少 6 位字符
+        - 注册后账户默认为激活状态
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: 注册成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 用户名或邮箱已存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: 用户登录
+      description: |
+        用户登录获取访问令牌。成功登录后将返回：
+        - **access_token**: 用于 API 访问的 JWT 令牌
+        - **refresh_token**: 用于刷新访问令牌
+        - **expires_in**: 令牌过期时间（秒）
+        - **user**: 用户基本信息
+
+        **令牌使用：**
+        - 访问令牌有效期为 24 小时
+        - 刷新令牌有效期为 7 天
+        - 请在令牌过期前使用刷新接口获取新令牌
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 用户名或密码错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: 刷新访问令牌
+      description: 使用刷新令牌获取新的访问令牌
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: 刷新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: 刷新令牌无效
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/content/upload:
+    post:
+      tags:
+        - Content Management
+      summary: 上传 HTML 内容
+      description: |
+        上传 HTML 内容到平台并生成访问链接。支持的功能：
+
+        **内容特性：**
+        - 支持完整的 HTML 文档（包括 CSS、JavaScript）
+        - 自动生成唯一的访问 ID
+        - 可设置公开或私有访问权限
+        - 支持设置访问码保护
+        - 可配置内容过期时间
+
+        **访问控制：**
+        - **公开内容**: 任何人都可以通过链接访问
+        - **私有内容**: 需要提供正确的访问码
+        - **过期控制**: 可设置内容的自动过期时间
+
+        **生成的访问链接格式：**
+        ```
+        https://your-domain/view/{content-id}
+        ```
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadRequest'
+      responses:
+        '201':
+          description: 上传成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Content uploaded successfully"
+                  content:
+                    $ref: '#/components/schemas/Content'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 未授权访问
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/content:
+    get:
+      tags:
+        - Content Management
+      summary: 获取内容列表
+      description: 获取当前用户的内容列表
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: 页码
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          description: 每页数量
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  contents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Content'
+                  total:
+                    type: integer
+                  page:
+                    type: integer
+                  limit:
+                    type: integer
+        '401':
+          description: 未授权访问
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/content/{id}:
+    get:
+      tags:
+        - Content Management
+      summary: 获取内容详情
+      description: 获取指定内容的详细信息
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 内容ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    $ref: '#/components/schemas/Content'
+        '404':
+          description: 内容不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 未授权访问
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags:
+        - Content Management
+      summary: 更新内容
+      description: 更新指定内容
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 内容ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Content updated successfully"
+                  content:
+                    $ref: '#/components/schemas/Content'
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 内容不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 未授权访问
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Content Management
+      summary: 删除内容
+      description: 删除指定内容
+      security:
+        - BearerAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 内容ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Content deleted successfully"
+        '404':
+          description: 内容不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 未授权访问
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /view/{id}:
+    get:
+      tags:
+        - Content Access
+      summary: 访问 HTML 页面
+      description: |
+        访问发布的 HTML 页面。这是内容的公开访问接口，支持：
+
+        **访问方式：**
+        - 直接通过浏览器访问
+        - 支持所有 HTTP 客户端
+        - 无需认证（公开内容）
+        - 私有内容需要提供访问码
+
+        **功能特性：**
+        - 自动记录访问统计
+        - 收集访问者地理位置信息
+        - 记录访问时间和来源
+        - 支持访问码验证
+
+        **访问统计：**
+        每次访问都会记录以下信息：
+        - IP 地址和地理位置
+        - 访问时间
+        - 用户代理（浏览器信息）
+        - 来源页面（Referer）
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 内容ID
+          schema:
+            type: string
+            format: uuid
+        - name: code
+          in: query
+          description: 访问码（私有内容需要）
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 页面内容
+          content:
+            text/html:
+              schema:
+                type: string
+        '404':
+          description: 页面不存在或已过期
+          content:
+            text/html:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    ApiKeyQuery:
+      type: apiKey
+      in: query
+      name: api_key
+    AdminSession:
+      type: apiKey
+      in: cookie
+      name: admin_session
+      description: 管理后台会话认证
+
+  schemas:
+    User:
+      type: object
+      description: |
+        用户账户信息模型。包含用户的基本信息、权限状态和 API 访问凭据。
+
+        **字段说明：**
+        - `id`: 系统生成的唯一标识符
+        - `username`: 用户选择的登录名，全局唯一
+        - `email`: 用户邮箱，用于通知和找回密码
+        - `api_key`: 自动生成的 API 访问密钥，可重置
+        - `is_active`: 账户状态，管理员可控制
+        - `is_admin`: 管理员权限标识
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 用户唯一标识符，系统自动生成
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: 用户名，全局唯一，长度 3-50 字符
+          example: "john_doe"
+        email:
+          type: string
+          format: email
+          description: 用户邮箱地址，全局唯一
+          example: "john.doe@example.com"
+        api_key:
+          type: string
+          description: API 访问密钥，用于 API 认证，可通过管理员重置
+          example: "ak_1234567890abcdef"
+        is_active:
+          type: boolean
+          description: 账户激活状态，false 表示账户被禁用
+          example: true
+        is_admin:
+          type: boolean
+          description: 管理员权限标识，true 表示具有管理员权限
+          example: false
+        created_at:
+          type: string
+          format: date-time
+          description: 账户创建时间
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: 账户最后更新时间
+          example: "2024-01-20T14:45:00Z"
+
+    Content:
+      type: object
+      description: |
+        HTML 内容模型。存储用户上传的 HTML 页面及其相关信息。
+
+        **内容特性：**
+        - 支持完整的 HTML 文档
+        - 可设置访问权限和保护
+        - 自动统计访问量
+        - 支持过期时间控制
+
+        **访问控制：**
+        - `is_public=true`: 公开访问，任何人可通过链接访问
+        - `is_public=false`: 私有访问，需要提供正确的 access_code
+        - `expires_at`: 可选的过期时间，过期后自动不可访问
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 内容唯一标识符，用于生成访问链接
+          example: "456e7890-e89b-12d3-a456-426614174001"
+        user_id:
+          type: string
+          format: uuid
+          description: 内容所有者的用户 ID
+          example: "123e4567-e89b-12d3-a456-426614174000"
+        title:
+          type: string
+          maxLength: 200
+          description: 内容标题，用于管理和识别
+          example: "我的个人主页"
+        description:
+          type: string
+          maxLength: 1000
+          description: 内容描述，可选字段
+          example: "这是我的个人介绍页面"
+        html_content:
+          type: string
+          description: 完整的 HTML 文档内容
+          example: "<html><head><title>Hello</title></head><body><h1>Hello World!</h1></body></html>"
+        access_code:
+          type: string
+          maxLength: 50
+          description: 私有内容的访问码，公开内容可为空
+          example: "secret123"
+        is_public:
+          type: boolean
+          description: 是否为公开内容，false 表示需要访问码
+          example: true
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: 内容过期时间，null 表示永不过期
+          example: "2024-12-31T23:59:59Z"
+        view_count:
+          type: integer
+          minimum: 0
+          description: 累计访问次数，系统自动统计
+          example: 42
+        is_active:
+          type: boolean
+          description: 内容激活状态，false 表示已被禁用
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          description: 内容创建时间
+          example: "2024-01-15T10:30:00Z"
+        updated_at:
+          type: string
+          format: date-time
+          description: 内容最后更新时间
+          example: "2024-01-20T14:45:00Z"
+
+    RegisterRequest:
+      type: object
+      required:
+        - username
+        - email
+        - password
+      properties:
+        username:
+          type: string
+          minLength: 3
+          maxLength: 50
+          description: 用户名
+        email:
+          type: string
+          format: email
+          description: 邮箱地址
+        password:
+          type: string
+          minLength: 6
+          description: 密码
+
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+          description: 用户名
+        password:
+          type: string
+          description: 密码
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token:
+          type: string
+          description: 访问令牌
+        refresh_token:
+          type: string
+          description: 刷新令牌
+        expires_in:
+          type: integer
+          description: 令牌过期时间（秒）
+        user:
+          $ref: '#/components/schemas/User'
+
+    RefreshRequest:
+      type: object
+      required:
+        - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          description: 刷新令牌
+
+    UploadRequest:
+      type: object
+      required:
+        - html_content
+      properties:
+        title:
+          type: string
+          description: 标题
+        description:
+          type: string
+          description: 描述
+        html_content:
+          type: string
+          description: HTML内容
+        is_public:
+          type: boolean
+          default: true
+          description: 是否公开
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: 过期时间
+        access_code:
+          type: string
+          description: 访问码
+
+    UpdateRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          description: 标题
+        description:
+          type: string
+          description: 描述
+        html_content:
+          type: string
+          description: HTML内容
+        is_public:
+          type: boolean
+          description: 是否公开
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: 过期时间
+        access_code:
+          type: string
+          description: 访问码
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: 错误信息
+        success:
+          type: boolean
+          default: false
+          description: 请求是否成功
+
+  # 管理后台 API 路径
+  /admin/api/contents/{id}:
+    delete:
+      tags:
+        - Admin - Content Management
+      summary: 删除内容（管理员）
+      description: 管理员删除指定内容
+      security:
+        - AdminSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 内容ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Content deleted successfully"
+        '404':
+          description: 内容不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+        '401':
+          description: 未授权访问
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/contents/{id}/restore:
+    post:
+      tags:
+        - Admin - Content Management
+      summary: 恢复内容（管理员）
+      description: 管理员恢复已删除的内容
+      security:
+        - AdminSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 内容ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 恢复成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Content restored successfully"
+        '404':
+          description: 内容不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/users/{id}/toggle-status:
+    post:
+      tags:
+        - Admin - User Management
+      summary: 切换用户状态
+      description: 管理员切换用户的激活状态
+      security:
+        - AdminSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 用户ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 状态切换成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User status updated successfully"
+                  is_active:
+                    type: boolean
+                    description: 新的激活状态
+        '404':
+          description: 用户不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/users/{id}/toggle-admin:
+    post:
+      tags:
+        - Admin - User Management
+      summary: 切换管理员权限
+      description: 管理员切换用户的管理员权限
+      security:
+        - AdminSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 用户ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 权限切换成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Admin status updated successfully"
+                  is_admin:
+                    type: boolean
+                    description: 新的管理员状态
+        '404':
+          description: 用户不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/users/{id}/reset-api-key:
+    post:
+      tags:
+        - Admin - User Management
+      summary: 重置用户API密钥
+      description: 管理员重置用户的API密钥
+      security:
+        - AdminSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 用户ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: API密钥重置成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "API key reset successfully"
+                  api_key:
+                    type: string
+                    description: 新的API密钥
+        '404':
+          description: 用户不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/users/{id}/details:
+    get:
+      tags:
+        - Admin - User Management
+      summary: 获取用户详情
+      description: 管理员获取用户详细信息
+      security:
+        - AdminSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 用户ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  user:
+                    $ref: '#/components/schemas/AdminUserDetails'
+        '404':
+          description: 用户不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/users/{id}/reset-password:
+    post:
+      tags:
+        - Admin - User Management
+      summary: 重置用户密码
+      description: 管理员重置用户密码
+      security:
+        - AdminSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 用户ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - new_password
+              properties:
+                new_password:
+                  type: string
+                  minLength: 6
+                  description: 新密码
+      responses:
+        '200':
+          description: 密码重置成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Password reset successfully"
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+        '404':
+          description: 用户不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/users/{id}:
+    delete:
+      tags:
+        - Admin - User Management
+      summary: 删除用户
+      description: 管理员删除用户
+      security:
+        - AdminSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 用户ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "User deleted successfully"
+        '404':
+          description: 用户不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+    AdminUserDetails:
+      type: object
+      allOf:
+        - $ref: '#/components/schemas/User'
+        - type: object
+          properties:
+            content_count:
+              type: integer
+              description: 内容数量
+            last_login:
+              type: string
+              format: date-time
+              nullable: true
+              description: 最后登录时间
+            total_views:
+              type: integer
+              description: 总访问量
+
+    AdminErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: false
+          description: 请求是否成功
+        error:
+          type: string
+          description: 错误信息
+
+  /admin/api/geoip-stats:
+    get:
+      tags:
+        - Admin - Analytics
+      summary: 获取地理位置统计
+      description: |
+        管理员获取地理位置访问统计数据。基于 MaxMind GeoIP2 数据库提供准确的地理位置信息。
+
+        **统计维度：**
+        - **国家级别**: 访问者所在国家的分布
+        - **地区级别**: 国家内的省/州分布
+        - **城市级别**: 具体城市的访问量
+
+        **时间范围：**
+        - 1d: 最近 24 小时
+        - 7d: 最近 7 天（默认）
+        - 30d: 最近 30 天
+        - 90d: 最近 90 天
+
+        **数据用途：**
+        - 了解用户地理分布
+        - 优化内容投放策略
+        - 分析市场覆盖情况
+        - 制定本地化策略
+      security:
+        - AdminSession: []
+      parameters:
+        - name: range
+          in: query
+          description: 时间范围
+          schema:
+            type: string
+            enum: [1d, 7d, 30d, 90d]
+            default: 7d
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  stats:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GeoStats'
+
+  /admin/api/settings:
+    get:
+      tags:
+        - Admin - Settings
+      summary: 获取所有设置
+      description: |
+        管理员获取所有系统设置。系统设置采用分类管理，支持动态配置。
+
+        **设置分类：**
+        - **server**: 服务器相关配置（端口、域名等）
+        - **database**: 数据库连接配置
+        - **redis**: Redis 缓存配置
+        - **security**: 安全相关设置
+        - **email**: 邮件服务配置
+        - **storage**: 文件存储配置
+        - **analytics**: 统计分析配置
+
+        **设置特性：**
+        - 支持多种数据类型（字符串、整数、布尔值、JSON）
+        - 版本控制和历史记录
+        - 热重载支持（部分配置）
+        - 权限控制和审计日志
+      security:
+        - AdminSession: []
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  settings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SettingResponse'
+        '500':
+          description: 服务器错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+    post:
+      tags:
+        - Admin - Settings
+      summary: 创建设置
+      description: 管理员创建新的系统设置
+      security:
+        - AdminSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Setting created successfully"
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/settings/categories:
+    get:
+      tags:
+        - Admin - Settings
+      summary: 获取设置分类
+      description: 管理员获取所有设置分类
+      security:
+        - AdminSession: []
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SettingCategory'
+
+  /admin/api/settings/category/{category}:
+    get:
+      tags:
+        - Admin - Settings
+      summary: 按分类获取设置
+      description: 管理员按分类获取系统设置
+      security:
+        - AdminSession: []
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: 设置分类
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  settings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SettingResponse'
+        '400':
+          description: 分类参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/settings/{id}:
+    put:
+      tags:
+        - Admin - Settings
+      summary: 更新设置
+      description: 管理员更新系统设置
+      security:
+        - AdminSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 设置ID
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SettingRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Setting updated successfully"
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+        '404':
+          description: 设置不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+    delete:
+      tags:
+        - Admin - Settings
+      summary: 删除设置
+      description: 管理员删除系统设置
+      security:
+        - AdminSession: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 设置ID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Setting deleted successfully"
+        '404':
+          description: 设置不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/settings/{category}/{key}/history:
+    get:
+      tags:
+        - Admin - Settings
+      summary: 获取设置历史
+      description: 管理员获取设置的修改历史
+      security:
+        - AdminSession: []
+      parameters:
+        - name: category
+          in: path
+          required: true
+          description: 设置分类
+          schema:
+            type: string
+        - name: key
+          in: path
+          required: true
+          description: 设置键名
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: 限制数量
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: 获取成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  history:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SettingHistory'
+        '400':
+          description: 参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/settings/export:
+    get:
+      tags:
+        - Admin - Settings
+      summary: 导出设置
+      description: 管理员导出所有系统设置
+      security:
+        - AdminSession: []
+      responses:
+        '200':
+          description: 导出成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SettingsBackup'
+
+  /admin/api/settings/import:
+    post:
+      tags:
+        - Admin - Settings
+      summary: 导入设置
+      description: 管理员导入系统设置
+      security:
+        - AdminSession: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - backup
+              properties:
+                backup:
+                  $ref: '#/components/schemas/SettingsBackup'
+                overwrite:
+                  type: boolean
+                  default: false
+                  description: 是否覆盖现有设置
+      responses:
+        '200':
+          description: 导入成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Settings imported successfully"
+        '400':
+          description: 请求参数错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+  /admin/api/settings/reload:
+    post:
+      tags:
+        - Admin - Settings
+      summary: 重载配置
+      description: 管理员触发配置重载
+      security:
+        - AdminSession: []
+      responses:
+        '200':
+          description: 重载成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Configuration reloaded successfully"
+        '500':
+          description: 重载失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminErrorResponse'
+
+    # 新增的数据模型
+    GeoStats:
+      type: object
+      properties:
+        country:
+          type: string
+          description: 国家
+        region:
+          type: string
+          description: 地区
+        city:
+          type: string
+          description: 城市
+        count:
+          type: integer
+          description: 访问次数
+
+    SettingResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 设置ID
+        category:
+          type: string
+          description: 设置分类
+        key:
+          type: string
+          description: 设置键名
+        value:
+          description: 设置值（根据value_type解析）
+        value_type:
+          type: string
+          enum: [string, int, bool, json]
+          description: 值类型
+        description:
+          type: string
+          description: 设置描述
+        is_active:
+          type: boolean
+          description: 是否启用
+        is_system:
+          type: boolean
+          description: 是否为系统内置设置
+        version:
+          type: integer
+          description: 版本号
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+        updated_at:
+          type: string
+          format: date-time
+          description: 更新时间
+        creator:
+          $ref: '#/components/schemas/User'
+        updater:
+          $ref: '#/components/schemas/User'
+
+    SettingRequest:
+      type: object
+      required:
+        - category
+        - key
+        - value
+        - description
+      properties:
+        category:
+          type: string
+          description: 设置分类
+        key:
+          type: string
+          description: 设置键名
+        value:
+          type: string
+          description: 设置值
+        description:
+          type: string
+          description: 设置描述
+        reason:
+          type: string
+          description: 修改原因
+
+    SettingCategory:
+      type: object
+      properties:
+        name:
+          type: string
+          description: 分类名称
+        display_name:
+          type: string
+          description: 显示名称
+        description:
+          type: string
+          description: 分类描述
+        count:
+          type: integer
+          description: 设置数量
+
+    SettingHistory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 历史记录ID
+        setting_id:
+          type: string
+          format: uuid
+          description: 设置ID
+        old_value:
+          type: string
+          description: 旧值
+        new_value:
+          type: string
+          description: 新值
+        reason:
+          type: string
+          description: 修改原因
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+        created_by:
+          type: string
+          format: uuid
+          description: 创建者ID
+        creator:
+          $ref: '#/components/schemas/User'
+
+    SettingsBackup:
+      type: object
+      properties:
+        version:
+          type: string
+          description: 备份版本
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+        settings:
+          type: array
+          items:
+            $ref: '#/components/schemas/SettingResponse'
+        metadata:
+          type: object
+          properties:
+            total_count:
+              type: integer
+              description: 设置总数
+            categories:
+              type: array
+              items:
+                type: string
+              description: 包含的分类
+
+    ContentAnalytics:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: 分析记录ID
+        content_id:
+          type: string
+          format: uuid
+          description: 内容ID
+        user_id:
+          type: string
+          format: uuid
+          description: 用户ID
+        ip_address:
+          type: string
+          description: IP地址
+        user_agent:
+          type: string
+          description: 用户代理
+        referer:
+          type: string
+          description: 来源页面
+        country:
+          type: string
+          description: 国家
+        region:
+          type: string
+          description: 地区
+        city:
+          type: string
+          description: 城市
+        latitude:
+          type: number
+          format: float
+          description: 纬度
+        longitude:
+          type: number
+          format: float
+          description: 经度
+        access_time:
+          type: string
+          format: date-time
+          description: 访问时间
+        created_at:
+          type: string
+          format: date-time
+          description: 创建时间
+
+    OverviewStats:
+      type: object
+      properties:
+        total_views:
+          type: integer
+          description: 总访问量
+        total_contents:
+          type: integer
+          description: 总内容数
+        active_contents:
+          type: integer
+          description: 活跃内容数
+        today_views:
+          type: integer
+          description: 今日访问量
+        unique_visitors:
+          type: integer
+          description: 独立访客数
+
+    TrafficStats:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: 日期
+        views:
+          type: integer
+          description: 访问量
+        unique_ips:
+          type: integer
+          description: 独立IP数
+
+

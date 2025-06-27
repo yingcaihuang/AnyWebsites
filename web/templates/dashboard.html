@@ -1,0 +1,257 @@
+{{define "dashboard-content"}}
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            总内容数
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.TotalContents}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-file-earmark-text fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            活跃内容
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.ActiveContents}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            总访问量
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.TotalViews}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-eye fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            今日访问
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.Stats.TodayViews}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-calendar-day fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最近内容和快速操作 -->
+<div class="row">
+    <!-- 最近内容 -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">最近内容</h6>
+                <a href="/admin/contents" class="btn btn-sm btn-primary">查看全部</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>作者</th>
+                                <th>访问量</th>
+                                <th>状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .RecentContents}}
+                            <tr>
+                                <td>
+                                    <strong>{{.Title}}</strong>
+                                    {{if .Description}}
+                                    <br><small class="text-muted">{{.Description}}</small>
+                                    {{end}}
+                                </td>
+                                <td>{{.User.Username}}</td>
+                                <td>
+                                    <span class="badge bg-info">{{.ViewCount}}</span>
+                                </td>
+                                <td>
+                                    {{if .IsActive}}
+                                    <span class="badge bg-success status-badge">活跃</span>
+                                    {{else}}
+                                    <span class="badge bg-secondary status-badge">已删除</span>
+                                    {{end}}
+                                </td>
+                                <td>
+                                    <small>{{.CreatedAt.Format "2006-01-02 15:04"}}</small>
+                                </td>
+                                <td>
+                                    <a href="/view/{{.ID}}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">暂无内容</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 快速操作和系统信息 -->
+    <div class="col-lg-4 mb-4">
+        <!-- 快速操作 -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">快速操作</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/admin/contents/new" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i>
+                        创建新内容
+                    </a>
+                    <a href="/admin/users" class="btn btn-outline-primary">
+                        <i class="bi bi-people"></i>
+                        用户管理
+                    </a>
+                    <a href="/admin/analytics" class="btn btn-outline-info">
+                        <i class="bi bi-graph-up"></i>
+                        查看统计
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- API 文档卡片 -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-book me-2"></i>
+                    API 文档
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-3">
+                    <small>完整的 RESTful API 接口文档，支持在线测试和代码生成</small>
+                </p>
+                <div class="d-grid gap-2">
+                    <a href="/docs/swagger-ui.html" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-code-square me-2"></i>
+                        Swagger UI 文档
+                        <i class="bi bi-box-arrow-up-right ms-1"></i>
+                    </a>
+                    <a href="/docs/README.md" target="_blank" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-file-text me-2"></i>
+                        使用指南
+                        <i class="bi bi-box-arrow-up-right ms-1"></i>
+                    </a>
+                    <a href="/docs/AnyWebsites-API.postman_collection.json" target="_blank" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-download me-2"></i>
+                        Postman 集合
+                        <i class="bi bi-box-arrow-up-right ms-1"></i>
+                    </a>
+                </div>
+
+                <!-- API 统计信息 -->
+                <div class="mt-3 pt-3 border-top">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="text-primary font-weight-bold">28</div>
+                            <small class="text-muted">API 端点</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-success font-weight-bold">8</div>
+                            <small class="text-muted">分类</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="text-info font-weight-bold">3</div>
+                            <small class="text-muted">认证方式</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统信息 -->
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">系统信息</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">当前时间</small>
+                        <div class="current-time"></div>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">系统版本</small>
+                        <div>v1.0.0</div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-6">
+                        <small class="text-muted">数据库</small>
+                        <div class="text-success">
+                            <i class="bi bi-check-circle"></i> 正常
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">服务状态</small>
+                        <div class="text-success">
+                            <i class="bi bi-check-circle"></i> 运行中
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script>
+    // 页面特定的 JavaScript
+    console.log('Dashboard loaded');
+</script>
+{{end}}

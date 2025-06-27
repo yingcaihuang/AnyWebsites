@@ -1,0 +1,244 @@
+{{define "content"}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>编辑用户计划</h2>
+                <a href="/admin/user-plans" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> 返回列表
+                </a>
+            </div>
+
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">更新计划</h5>
+                        </div>
+                        <div class="card-body">
+                            <form action="/admin/user-plans/{{.User.ID}}/update" method="POST">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">用户名</label>
+                                        <input type="text" class="form-control" value="{{.User.Username}}" readonly>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">邮箱</label>
+                                        <input type="text" class="form-control" value="{{.User.Email}}" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">当前计划</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            {{if .User.Subscription}}
+                                                <span class="badge bg-{{if eq .User.Subscription.PlanType "community"}}secondary{{else if eq .User.Subscription.PlanType "developer"}}primary{{else if eq .User.Subscription.PlanType "pro"}}success{{else if eq .User.Subscription.PlanType "max"}}warning{{else}}danger{{end}}">
+                                                    {{.User.Subscription.PlanConfig.Name}}
+                                                </span>
+                                            {{else}}
+                                                <span class="badge bg-secondary">Community Plan</span>
+                                            {{end}}
+                                        </span>
+                                        <input type="text" class="form-control" 
+                                               value="{{if .User.Subscription}}{{.User.Subscription.Status}}{{else}}active{{end}}" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="plan_type" class="form-label">新计划 <span class="text-danger">*</span></label>
+                                    <select class="form-select" id="plan_type" name="plan_type" required onchange="updatePlanInfo()">
+                                        <option value="">请选择计划</option>
+                                        {{range .Plans}}
+                                        <option value="{{.Type}}" 
+                                                data-price="{{.Price}}" 
+                                                data-features="{{range .Features}}{{.}};{{end}}"
+                                                {{if $.User.Subscription}}{{if eq $.User.Subscription.PlanType .Type}}selected{{end}}{{end}}>
+                                            {{.Name}} - {{if eq .Price 0}}免费{{else}}${{printf "%.2f" .Price}}/月{{end}}
+                                        </option>
+                                        {{end}}
+                                    </select>
+                                </div>
+
+                                <div class="mb-3" id="duration-group">
+                                    <label for="duration" class="form-label">订阅时长（月）</label>
+                                    <select class="form-select" id="duration" name="duration">
+                                        <option value="1">1个月</option>
+                                        <option value="3">3个月</option>
+                                        <option value="6">6个月</option>
+                                        <option value="12" selected>12个月</option>
+                                        <option value="24">24个月</option>
+                                    </select>
+                                    <div class="form-text">企业版无需设置时长</div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="reason" class="form-label">变更原因</label>
+                                    <textarea class="form-control" id="reason" name="reason" rows="3" 
+                                              placeholder="请输入计划变更的原因..."></textarea>
+                                </div>
+
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a href="/admin/user-plans" class="btn btn-secondary me-md-2">取消</a>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save"></i> 更新计划
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">计划信息</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="plan-info">
+                                <p class="text-muted">请选择一个计划查看详细信息</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{if .User.Subscription}}
+                    <div class="card mt-3">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">当前订阅信息</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td>计划类型:</td>
+                                    <td><strong>{{.User.Subscription.PlanConfig.Name}}</strong></td>
+                                </tr>
+                                <tr>
+                                    <td>价格:</td>
+                                    <td>
+                                        {{if eq .User.Subscription.PlanConfig.Price 0}}
+                                            免费
+                                        {{else}}
+                                            ${{printf "%.2f" .User.Subscription.PlanConfig.Price}}/月
+                                        {{end}}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>状态:</td>
+                                    <td>
+                                        <span class="badge bg-{{if eq .User.Subscription.Status "active"}}success{{else if eq .User.Subscription.Status "expired"}}danger{{else}}warning{{end}}">
+                                            {{.User.Subscription.Status}}
+                                        </span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>开始时间:</td>
+                                    <td>{{.User.Subscription.StartedAt.Format "2006-01-02 15:04"}}</td>
+                                </tr>
+                                <tr>
+                                    <td>过期时间:</td>
+                                    <td>
+                                        {{if .User.Subscription.ExpiresAt}}
+                                            {{.User.Subscription.ExpiresAt.Format "2006-01-02 15:04"}}
+                                        {{else}}
+                                            永不过期
+                                        {{end}}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function updatePlanInfo() {
+    const select = document.getElementById('plan_type');
+    const selectedOption = select.options[select.selectedIndex];
+    const planInfo = document.getElementById('plan-info');
+    const durationGroup = document.getElementById('duration-group');
+    
+    if (selectedOption.value === '') {
+        planInfo.innerHTML = '<p class="text-muted">请选择一个计划查看详细信息</p>';
+        return;
+    }
+    
+    const price = parseFloat(selectedOption.dataset.price);
+    const features = selectedOption.dataset.features.split(';').filter(f => f.trim() !== '');
+    const planType = selectedOption.value;
+    
+    // 企业版隐藏时长选择
+    if (planType === 'enterprise') {
+        durationGroup.style.display = 'none';
+    } else {
+        durationGroup.style.display = 'block';
+    }
+    
+    let priceText = price === 0 ? '免费' : `$${price.toFixed(2)}/月`;
+    
+    planInfo.innerHTML = `
+        <div class="mb-3">
+            <h6>价格</h6>
+            <p class="h5 text-primary">${priceText}</p>
+        </div>
+        <div class="mb-3">
+            <h6>功能特性</h6>
+            <ul class="list-unstyled">
+                ${features.map(feature => `<li><i class="fas fa-check text-success me-2"></i>${feature}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+// 页面加载时更新计划信息
+document.addEventListener('DOMContentLoaded', function() {
+    updatePlanInfo();
+});
+</script>
+
+<style>
+.card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border: 1px solid rgba(0, 0, 0, 0.125);
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+#plan-info ul li {
+    padding: 0.25rem 0;
+    border-bottom: 1px solid #f8f9fa;
+}
+
+#plan-info ul li:last-child {
+    border-bottom: none;
+}
+
+.table-sm td {
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid #dee2e6;
+}
+
+.table-sm tr:first-child td {
+    border-top: none;
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.form-text {
+    font-size: 0.875em;
+    color: #6c757d;
+}
+</style>
+{{end}}

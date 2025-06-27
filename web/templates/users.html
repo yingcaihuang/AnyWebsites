@@ -1,0 +1,606 @@
+{{define "users-content"}}
+<!-- 操作栏 -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0">用户管理</h4>
+        <small class="text-muted">管理系统用户和权限</small>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-primary">总计: {{.Total}} 个用户</span>
+        <a href="/admin/users/new" class="btn btn-primary">
+            <i class="bi bi-person-plus"></i>
+            新建用户
+        </a>
+    </div>
+</div>
+
+<!-- 搜索和筛选 -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="GET" action="/admin/users" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">搜索用户</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       placeholder="用户名或邮箱" value="{{.Search}}">
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">状态筛选</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="active" {{if eq .Status "active"}}selected{{end}}>活跃用户</option>
+                    <option value="inactive" {{if eq .Status "inactive"}}selected{{end}}>已禁用</option>
+                    <option value="all" {{if eq .Status "all"}}selected{{end}}>全部用户</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-search"></i>
+                        搜索
+                    </button>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <div class="d-grid">
+                    <a href="/admin/users" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        重置
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 用户列表 -->
+<div class="card shadow">
+    <div class="card-header">
+        <h6 class="mb-0">
+            <i class="bi bi-people"></i>
+            用户列表
+        </h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>用户信息</th>
+                    <th>邮箱</th>
+                    <th>API密钥</th>
+                    <th>权限</th>
+                    <th>状态</th>
+                    <th>注册时间</th>
+                    <th>操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range .Users}}
+                <tr>
+                    <td>
+                        <div>
+                            <strong>{{.Username}}</strong>
+                            <small class="text-muted d-block">ID: {{.ID}}</small>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-break">{{.Email}}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            <div class="api-key-container me-2">
+                                <code class="text-muted api-key-text" style="font-size: 0.8rem;" id="api-key-{{.ID}}">
+                                    <span class="api-key-hidden">••••••••••••••••••••••••••••••••</span>
+                                    <span class="api-key-visible d-none">{{.APIKey}}</span>
+                                </code>
+                            </div>
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-sm btn-outline-info"
+                                        onclick="toggleAPIKeyVisibility('{{.ID}}')" title="显示/隐藏API密钥">
+                                    <i class="bi bi-eye" id="eye-icon-{{.ID}}"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-success"
+                                        onclick="copyAPIKey('{{.ID}}', '{{.APIKey}}')" title="复制API密钥">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        onclick="resetAPIKey('{{.ID}}')" title="重置API密钥">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {{if .IsAdmin}}
+                            <span class="badge bg-danger me-2">管理员</span>
+                            {{else}}
+                            <span class="badge bg-secondary me-2">普通用户</span>
+                            {{end}}
+                            <button type="button" class="btn btn-sm btn-outline-warning" 
+                                    onclick="toggleAdmin('{{.ID}}')" title="切换管理员权限">
+                                <i class="bi bi-shield"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center">
+                            {{if .IsActive}}
+                            <span class="badge bg-success me-2">活跃</span>
+                            {{else}}
+                            <span class="badge bg-secondary me-2">已禁用</span>
+                            {{end}}
+                            <button type="button" class="btn btn-sm btn-outline-primary" 
+                                    onclick="toggleStatus('{{.ID}}')" title="切换用户状态">
+                                <i class="bi bi-toggle-{{if .IsActive}}on{{else}}off{{end}}"></i>
+                            </button>
+                        </div>
+                    </td>
+                    <td>
+                        <small class="text-muted">{{.CreatedAt.Format "2006-01-02 15:04"}}</small>
+                    </td>
+                    <td>
+                        <div class="btn-group" role="group">
+                            <button type="button" class="btn btn-sm btn-outline-info"
+                                    onclick="viewUserDetails('{{.ID}}')" title="查看详情">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <a href="/admin/users/{{.ID}}/edit" class="btn btn-sm btn-outline-primary" title="编辑用户">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="7" class="text-center text-muted py-4">
+                        <i class="bi bi-inbox display-4 d-block mb-2"></i>
+                        暂无用户数据
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- 分页 -->
+    {{if gt .TotalPages 1}}
+    <div class="card-footer">
+        <nav aria-label="用户分页">
+            <ul class="pagination justify-content-center mb-0">
+                {{if gt .CurrentPage 1}}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{sub .CurrentPage 1}}&search={{.Search}}&status={{.Status}}">上一页</a>
+                </li>
+                {{end}}
+
+                {{range .PageNumbers}}
+                <li class="page-item {{if eq . $.CurrentPage}}active{{end}}">
+                    <a class="page-link" href="?page={{.}}&search={{$.Search}}&status={{$.Status}}">{{.}}</a>
+                </li>
+                {{end}}
+
+                {{if lt .CurrentPage .TotalPages}}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{add .CurrentPage 1}}&search={{.Search}}&status={{.Status}}">下一页</a>
+                </li>
+                {{end}}
+            </ul>
+        </nav>
+    </div>
+    {{end}}
+</div>
+
+<!-- 用户详情模态框 -->
+<div class="modal fade" id="userDetailsModal" tabindex="-1" aria-labelledby="userDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="userDetailsModalLabel">
+                    <i class="bi bi-person-circle"></i>
+                    用户详情
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="userDetailsContent">
+                <!-- 用户详情内容将通过 JavaScript 加载 -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "users-scripts"}}
+<script>
+function toggleStatus(userId) {
+    if (confirm('确定要切换用户状态吗？')) {
+        fetch(`/admin/api/users/${userId}/toggle-status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('操作失败: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('操作失败: ' + error);
+        });
+    }
+}
+
+function toggleAdmin(userId) {
+    if (confirm('确定要切换管理员权限吗？')) {
+        fetch(`/admin/api/users/${userId}/toggle-admin`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('操作失败: ' + data.error);
+            }
+        })
+        .catch(error => {
+            alert('操作失败: ' + error);
+        });
+    }
+}
+
+function resetAPIKey(userId) {
+    fetch(`/admin/api/users/${userId}/reset-api-key`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 更新页面上的API密钥显示
+            const apiKeyElement = document.getElementById(`api-key-${userId}`);
+            const visibleSpan = apiKeyElement.querySelector('.api-key-visible');
+            const hiddenSpan = apiKeyElement.querySelector('.api-key-hidden');
+
+            visibleSpan.textContent = data.api_key;
+
+            // 显示成功提示
+            showToast('API密钥重置成功', 'success');
+
+            // 如果当前是显示状态，保持显示新密钥
+            if (!visibleSpan.classList.contains('d-none')) {
+                // 密钥已经更新，无需额外操作
+            }
+        } else {
+            showToast('重置失败: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('重置失败: ' + error, 'error');
+    });
+}
+
+function toggleAPIKeyVisibility(userId) {
+    const apiKeyElement = document.getElementById(`api-key-${userId}`);
+    const visibleSpan = apiKeyElement.querySelector('.api-key-visible');
+    const hiddenSpan = apiKeyElement.querySelector('.api-key-hidden');
+    const eyeIcon = document.getElementById(`eye-icon-${userId}`);
+
+    if (visibleSpan.classList.contains('d-none')) {
+        // 显示API密钥
+        visibleSpan.classList.remove('d-none');
+        hiddenSpan.classList.add('d-none');
+        eyeIcon.className = 'bi bi-eye-slash';
+    } else {
+        // 隐藏API密钥
+        visibleSpan.classList.add('d-none');
+        hiddenSpan.classList.remove('d-none');
+        eyeIcon.className = 'bi bi-eye';
+    }
+}
+
+function copyAPIKey(userId, apiKey) {
+    // 使用现代的 Clipboard API
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(apiKey).then(() => {
+            showToast('API密钥已复制到剪贴板', 'success');
+        }).catch(err => {
+            // 降级到传统方法
+            fallbackCopyTextToClipboard(apiKey);
+        });
+    } else {
+        // 降级到传统方法
+        fallbackCopyTextToClipboard(apiKey);
+    }
+}
+
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement("textarea");
+    textArea.value = text;
+
+    // 避免滚动到底部
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.position = "fixed";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showToast('API密钥已复制到剪贴板', 'success');
+        } else {
+            showToast('复制失败，请手动复制', 'error');
+        }
+    } catch (err) {
+        showToast('复制失败，请手动复制', 'error');
+    }
+
+    document.body.removeChild(textArea);
+}
+
+function showToast(message, type = 'info') {
+    // 创建toast容器（如果不存在）
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        toastContainer.style.zIndex = '1055';
+        document.body.appendChild(toastContainer);
+    }
+
+    // 创建toast元素
+    const toastId = 'toast-' + Date.now();
+    const toastHtml = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'success' ? 'success' : type === 'error' ? 'danger' : 'primary'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+
+    toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+    // 显示toast
+    const toastElement = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastElement, {
+        autohide: true,
+        delay: 3000
+    });
+    toast.show();
+
+    // 清理已隐藏的toast
+    toastElement.addEventListener('hidden.bs.toast', () => {
+        toastElement.remove();
+    });
+}
+
+function viewUserDetails(userId) {
+    // 获取用户详情
+    fetch(`/admin/api/users/${userId}/details`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showUserDetailsModal(data.user, data.stats, data.recent_contents);
+            } else {
+                showToast('获取用户详情失败: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showToast('获取用户详情失败: ' + error, 'error');
+        });
+}
+
+function showUserDetailsModal(user, stats, recentContents) {
+    const modalContent = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-muted">基本信息</h6>
+                <table class="table table-sm">
+                    <tr>
+                        <td><strong>用户名</strong></td>
+                        <td>${user.username}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>邮箱</strong></td>
+                        <td>${user.email}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>API密钥</strong></td>
+                        <td>
+                            <code class="text-muted">${user.api_key}</code>
+                            <button type="button" class="btn btn-sm btn-outline-success ms-2"
+                                    onclick="copyToClipboard('${user.api_key}')" title="复制">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>状态</strong></td>
+                        <td>
+                            ${user.is_active ?
+                                '<span class="badge bg-success">活跃</span>' :
+                                '<span class="badge bg-secondary">已禁用</span>'
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>权限</strong></td>
+                        <td>
+                            ${user.is_admin ?
+                                '<span class="badge bg-danger">管理员</span>' :
+                                '<span class="badge bg-secondary">普通用户</span>'
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>注册时间</strong></td>
+                        <td>${new Date(user.created_at).toLocaleString('zh-CN')}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>更新时间</strong></td>
+                        <td>${new Date(user.updated_at).toLocaleString('zh-CN')}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6 class="text-muted">统计信息</h6>
+                <div class="row text-center mb-3">
+                    <div class="col-6">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body py-2">
+                                <h4 class="mb-0">${stats.total_contents}</h4>
+                                <small>总内容数</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="card bg-success text-white">
+                            <div class="card-body py-2">
+                                <h4 class="mb-0">${stats.active_contents}</h4>
+                                <small>活跃内容</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h6 class="text-muted">最近内容</h6>
+                <div class="list-group list-group-flush">
+                    ${recentContents.length > 0 ?
+                        recentContents.map(content => `
+                            <div class="list-group-item px-0 py-2">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="mb-1">${content.title}</h6>
+                                        <p class="mb-1 text-muted small">${content.description || '无描述'}</p>
+                                        <small class="text-muted">${new Date(content.created_at).toLocaleDateString('zh-CN')}</small>
+                                    </div>
+                                    <span class="badge ${content.is_active ? 'bg-success' : 'bg-secondary'} ms-2">
+                                        ${content.is_active ? '活跃' : '已禁用'}
+                                    </span>
+                                </div>
+                            </div>
+                        `).join('') :
+                        '<div class="text-center text-muted py-3">暂无内容</div>'
+                    }
+                </div>
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="row">
+            <div class="col-12">
+                <h6 class="text-muted">快速操作</h6>
+                <div class="btn-group" role="group">
+                    <a href="/admin/users/${user.id}/edit" class="btn btn-outline-primary">
+                        <i class="bi bi-pencil"></i> 编辑用户
+                    </a>
+                    <button type="button" class="btn btn-outline-warning" onclick="resetUserPassword('${user.id}')">
+                        <i class="bi bi-key"></i> 重置密码
+                    </button>
+                    <button type="button" class="btn btn-outline-danger" onclick="deleteUserConfirm('${user.id}', '${user.username}')">
+                        <i class="bi bi-trash"></i> 删除用户
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.getElementById('userDetailsContent').innerHTML = modalContent;
+    const modal = new bootstrap.Modal(document.getElementById('userDetailsModal'));
+    modal.show();
+}
+
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('已复制到剪贴板', 'success');
+        }).catch(err => {
+            fallbackCopyTextToClipboard(text);
+        });
+    } else {
+        fallbackCopyTextToClipboard(text);
+    }
+}
+
+function resetUserPassword(userId) {
+    if (confirm('确定要重置用户密码吗？新密码将显示在弹窗中。')) {
+        fetch(`/admin/api/users/${userId}/reset-password`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`密码重置成功！\n新密码：${data.new_password}\n\n请将新密码告知用户，并建议用户尽快修改密码。`);
+                showToast('密码重置成功', 'success');
+            } else {
+                showToast('密码重置失败: ' + data.error, 'error');
+            }
+        })
+        .catch(error => {
+            showToast('密码重置失败: ' + error, 'error');
+        });
+    }
+}
+
+function deleteUserConfirm(userId, username) {
+    if (confirm(`确定要删除用户 "${username}" 吗？\n\n此操作将：\n- 永久删除用户账户\n- 删除用户的所有内容\n- 删除相关的分析数据\n\n此操作不可恢复！`)) {
+        if (confirm('请再次确认：您真的要删除此用户及其所有数据吗？')) {
+            deleteUser(userId);
+        }
+    }
+}
+
+function deleteUser(userId) {
+    fetch(`/admin/api/users/${userId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast('用户删除成功', 'success');
+            // 关闭模态框
+            const modal = bootstrap.Modal.getInstance(document.getElementById('userDetailsModal'));
+            if (modal) {
+                modal.hide();
+            }
+            // 刷新页面
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            showToast('删除失败: ' + data.error, 'error');
+        }
+    })
+    .catch(error => {
+        showToast('删除失败: ' + error, 'error');
+    });
+}
+</script>
+{{end}}

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AnyWebsites 演示页面</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .feature {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border-left: 4px solid #00ff88;
+        }
+        .feature h3 {
+            margin-top: 0;
+            color: #00ff88;
+        }
+        .demo-info {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .api-example {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 AnyWebsites 演示页面</h1>
+        
+        <div class="demo-info">
+            <h2>欢迎使用 AnyWebsites HTML 托管服务！</h2>
+            <p>这是一个通过 API 上传的演示页面，展示了我们平台的核心功能。</p>
+        </div>
+
+        <div class="feature">
+            <h3>📤 HTML 内容上传</h3>
+            <p>通过简单的 API 调用即可上传 HTML 内容，系统会自动分配唯一的访问 ID。</p>
+            <div class="api-example">
+curl -X POST http://localhost:8080/api/content/upload \<br>
+-H "Content-Type: application/json" \<br>
+-d '{"title":"My Page","html_content":"&lt;html&gt;...&lt;/html&gt;"}'
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3>🔐 用户管理系统</h3>
+            <p>完整的用户注册、登录和 JWT 认证系统，支持 API 密钥管理。</p>
+            <div class="api-example">
+curl -X POST http://localhost:8080/api/auth/register \<br>
+-H "Content-Type: application/json" \<br>
+-d '{"username":"user","email":"user@example.com","password":"pass123"}'
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3>⏰ 过期控制</h3>
+            <p>支持设置内容过期时间和加密访问码，灵活控制内容的访问权限。</p>
+        </div>
+
+        <div class="feature">
+            <h3>📊 访问统计</h3>
+            <p>详细的访问统计功能，包括访问来源、流量分析、地理位置统计等。</p>
+        </div>
+
+        <div class="feature">
+            <h3>🐳 容器化部署</h3>
+            <p>支持 Docker Compose 一键部署，包含 PostgreSQL 和 Redis 服务。</p>
+            <div class="api-example">
+docker-compose up -d
+            </div>
+        </div>
+
+        <div class="feature">
+            <h3>🌐 高性能服务</h3>
+            <p>基于 Go + Gin 框架构建，配合 Nginx 提供高性能的静态文件服务。</p>
+        </div>
+
+        <div class="footer">
+            <p>✨ 由 AnyWebsites 强力驱动 ✨</p>
+            <p>当前时间: <span id="current-time"></span></p>
+        </div>
+    </div>
+
+    <script>
+        function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').textContent = now.toLocaleString('zh-CN');
+        }
+        updateTime();
+        setInterval(updateTime, 1000);
+    </script>
+</body>
+</html>

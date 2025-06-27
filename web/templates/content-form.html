@@ -1,0 +1,251 @@
+{{define "content-form-content"}}
+<!-- 操作栏 -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">仪表板</a></li>
+                <li class="breadcrumb-item"><a href="/admin/contents">内容管理</a></li>
+                <li class="breadcrumb-item active">{{if .IsEdit}}编辑内容{{else}}新建内容{{end}}</li>
+            </ol>
+        </nav>
+    </div>
+    <div>
+        <a href="/admin/contents" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i>
+            返回列表
+        </a>
+    </div>
+</div>
+
+<!-- 内容表单 -->
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="bi bi-{{if .IsEdit}}pencil{{else}}plus-circle{{end}}"></i>
+                    {{if .IsEdit}}编辑内容{{else}}新建内容{{end}}
+                </h5>
+            </div>
+            <div class="card-body">
+                {{if .Error}}
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    {{.Error}}
+                </div>
+                {{end}}
+
+                <form method="POST" action="{{if .IsEdit}}/admin/contents/{{.Content.ID}}/edit{{else}}/admin/contents/new{{end}}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">标题 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               placeholder="请输入内容标题" required value="{{.Title_}}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">描述</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                                  placeholder="请输入内容描述（可选）">{{.Description}}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="html_content" class="form-label">HTML 内容 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="html_content" name="html_content" rows="15" 
+                                  placeholder="请输入 HTML 内容" required>{{.HtmlContent}}</textarea>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle"></i>
+                            支持完整的 HTML 代码，包括 CSS 和 JavaScript
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="bi bi-{{if .IsEdit}}check{{else}}plus{{end}}-circle"></i>
+                                    {{if .IsEdit}}更新内容{{else}}创建内容{{end}}
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-outline-info" onclick="previewContent()">
+                                    <i class="bi bi-eye"></i>
+                                    预览内容
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{if .IsEdit}}
+        <!-- 内容信息 -->
+        <div class="card shadow mt-4">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle"></i>
+                    内容信息
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">内容ID</small>
+                        <div class="font-monospace">{{.Content.ID}}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">创建者</small>
+                        <div>{{.Content.User.Username}}</div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">创建时间</small>
+                        <div>{{.Content.CreatedAt.Format "2006-01-02 15:04:05"}}</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">更新时间</small>
+                        <div>{{.Content.UpdatedAt.Format "2006-01-02 15:04:05"}}</div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">访问量</small>
+                        <div>{{.Content.ViewCount}} 次</div>
+                    </div>
+                    <div class="col-md-6">
+                        <small class="text-muted">状态</small>
+                        <div>
+                            {{if .Content.IsActive}}
+                            <span class="badge bg-success">活跃</span>
+                            {{else}}
+                            <span class="badge bg-secondary">已删除</span>
+                            {{end}}
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-12">
+                        <small class="text-muted">访问链接</small>
+                        <div>
+                            <a href="/view/{{.Content.ID}}" target="_blank" class="text-decoration-none">
+                                <i class="bi bi-link-45deg"></i>
+                                {{.Request.Host}}/view/{{.Content.ID}}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{end}}
+    </div>
+</div>
+
+<!-- 预览模态框 -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="previewModalLabel">
+                    <i class="bi bi-eye"></i>
+                    内容预览
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <iframe id="previewFrame" style="width: 100%; height: 500px; border: none;"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "content-form-scripts"}}
+<script>
+function previewContent() {
+    const htmlContent = document.getElementById('html_content').value;
+    if (!htmlContent.trim()) {
+        alert('请先输入 HTML 内容');
+        return;
+    }
+    
+    const iframe = document.getElementById('previewFrame');
+    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+    
+    // 创建 blob URL 来预览内容
+    const blob = new Blob([htmlContent], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    iframe.src = url;
+    modal.show();
+    
+    // 清理 URL
+    document.getElementById('previewModal').addEventListener('hidden.bs.modal', function () {
+        URL.revokeObjectURL(url);
+        iframe.src = '';
+    }, { once: true });
+}
+
+// 自动保存草稿（可选功能）
+let autoSaveTimer;
+function autoSave() {
+    clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(() => {
+        const title = document.getElementById('title').value;
+        const description = document.getElementById('description').value;
+        const htmlContent = document.getElementById('html_content').value;
+        
+        if (title || description || htmlContent) {
+            localStorage.setItem('content_draft', JSON.stringify({
+                title: title,
+                description: description,
+                html_content: htmlContent,
+                timestamp: new Date().toISOString()
+            }));
+        }
+    }, 2000);
+}
+
+// 恢复草稿
+function restoreDraft() {
+    const draft = localStorage.getItem('content_draft');
+    if (draft) {
+        const data = JSON.parse(draft);
+        const isEdit = {{.IsEdit}};
+        
+        if (!isEdit && confirm('发现未保存的草稿，是否恢复？')) {
+            document.getElementById('title').value = data.title || '';
+            document.getElementById('description').value = data.description || '';
+            document.getElementById('html_content').value = data.html_content || '';
+        }
+    }
+}
+
+// 清除草稿
+function clearDraft() {
+    localStorage.removeItem('content_draft');
+}
+
+// 页面加载时恢复草稿
+document.addEventListener('DOMContentLoaded', function() {
+    restoreDraft();
+    
+    // 绑定自动保存事件
+    ['title', 'description', 'html_content'].forEach(id => {
+        document.getElementById(id).addEventListener('input', autoSave);
+    });
+    
+    // 表单提交时清除草稿
+    document.querySelector('form').addEventListener('submit', clearDraft);
+});
+</script>
+{{end}}

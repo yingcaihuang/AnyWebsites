@@ -1,0 +1,224 @@
+{{define "geoip-monitor"}}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>GeoIP 服务监控</h2>
+                <button class="btn btn-primary" onclick="refreshStats()">
+                    <i class="fas fa-sync-alt"></i> 刷新数据
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 服务状态概览 -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">总请求数</h4>
+                            <h2 id="total-requests">{{.ServiceStats.total_requests}}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-globe fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">缓存命中率</h4>
+                            <h2 id="cache-hit-rate">{{.ServiceStats.cache_hit_rate}}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-bullseye fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">批量处理</h4>
+                            <h2 id="batch-processed">{{.ServiceStats.batch_processed}}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-layer-group fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4 class="card-title">错误数</h4>
+                            <h2 id="errors">{{.ServiceStats.errors}}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-exclamation-triangle fa-2x"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详细统计信息 -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">服务统计</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <td><strong>总请求数</strong></td>
+                                <td id="service-total-requests">{{.ServiceStats.total_requests}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>缓存命中</strong></td>
+                                <td id="service-cache-hits">{{.ServiceStats.cache_hits}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>缓存未命中</strong></td>
+                                <td id="service-cache-misses">{{.ServiceStats.cache_misses}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>缓存命中率</strong></td>
+                                <td id="service-cache-hit-rate">{{.ServiceStats.cache_hit_rate}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>批量处理次数</strong></td>
+                                <td id="service-batch-processed">{{.ServiceStats.batch_processed}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>直接处理次数</strong></td>
+                                <td id="service-direct-processed">{{.ServiceStats.direct_processed}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>错误总数</strong></td>
+                                <td id="service-errors">{{.ServiceStats.errors}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">缓存统计</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-striped">
+                        <tbody>
+                            <tr>
+                                <td><strong>缓存大小</strong></td>
+                                <td id="cache-size">{{.CacheStats.cache_size}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>缓存条目数</strong></td>
+                                <td id="cache-entries">{{.CacheStats.cache_entries}}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>缓存过期时间</strong></td>
+                                <td id="cache-expiry">{{.CacheStats.cache_expiry}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 错误信息 -->
+    {{if .ServiceStats.last_error}}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="card-title mb-0">最近错误</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>错误信息:</strong> <span id="last-error">{{.ServiceStats.last_error}}</span></p>
+                    <p><strong>发生时间:</strong> <span id="last-error-time">{{.ServiceStats.last_error_time}}</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{end}}
+
+    <!-- 最后更新时间 -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <p class="text-muted text-center">
+                最后更新时间: <span id="last-update">{{.ServiceStats.last_error_time}}</span>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshStats() {
+    fetch('/admin/api/geoip-stats')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateStats(data.service_stats, data.cache_stats);
+                document.getElementById('last-update').textContent = data.timestamp;
+            } else {
+                alert('获取统计信息失败: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('获取统计信息失败');
+        });
+}
+
+function updateStats(serviceStats, cacheStats) {
+    // 更新概览卡片
+    document.getElementById('total-requests').textContent = serviceStats.total_requests;
+    document.getElementById('cache-hit-rate').textContent = serviceStats.cache_hit_rate;
+    document.getElementById('batch-processed').textContent = serviceStats.batch_processed;
+    document.getElementById('errors').textContent = serviceStats.errors;
+
+    // 更新服务统计表格
+    document.getElementById('service-total-requests').textContent = serviceStats.total_requests;
+    document.getElementById('service-cache-hits').textContent = serviceStats.cache_hits;
+    document.getElementById('service-cache-misses').textContent = serviceStats.cache_misses;
+    document.getElementById('service-cache-hit-rate').textContent = serviceStats.cache_hit_rate;
+    document.getElementById('service-batch-processed').textContent = serviceStats.batch_processed;
+    document.getElementById('service-direct-processed').textContent = serviceStats.direct_processed;
+    document.getElementById('service-errors').textContent = serviceStats.errors;
+
+    // 更新缓存统计表格
+    document.getElementById('cache-size').textContent = cacheStats.cache_size;
+    document.getElementById('cache-entries').textContent = cacheStats.cache_entries;
+    document.getElementById('cache-expiry').textContent = cacheStats.cache_expiry;
+
+    // 更新错误信息
+    if (serviceStats.last_error) {
+        document.getElementById('last-error').textContent = serviceStats.last_error;
+        document.getElementById('last-error-time').textContent = serviceStats.last_error_time;
+    }
+}
+
+// 自动刷新（每30秒）
+setInterval(refreshStats, 30000);
+</script>
+{{end}}

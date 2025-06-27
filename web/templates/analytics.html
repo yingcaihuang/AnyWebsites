@@ -1,0 +1,546 @@
+{{define "analytics-content"}}
+<!-- 时间范围选择器 -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4 class="mb-0">统计分析</h4>
+        <small class="text-muted">网站访问数据和用户行为分析</small>
+    </div>
+    <div>
+        <div class="btn-group" role="group">
+            <a href="/admin/analytics?range=1d" class="btn btn-outline-primary {{if eq .TimeRange "1d"}}active{{end}}">今日</a>
+            <a href="/admin/analytics?range=7d" class="btn btn-outline-primary {{if eq .TimeRange "7d"}}active{{end}}">7天</a>
+            <a href="/admin/analytics?range=30d" class="btn btn-outline-primary {{if eq .TimeRange "30d"}}active{{end}}">30天</a>
+            <a href="/admin/analytics?range=90d" class="btn btn-outline-primary {{if eq .TimeRange "90d"}}active{{end}}">90天</a>
+        </div>
+    </div>
+</div>
+
+<!-- 总览统计卡片 -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            总访问量
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.OverviewStats.TotalViews}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-eye fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            独立访客
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.OverviewStats.UniqueVisitors}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-people fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            总内容数
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.OverviewStats.TotalContents}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-file-earmark-text fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            今日访问
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{.OverviewStats.TodayViews}}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="bi bi-calendar-day fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 图表区域 -->
+<div class="row mb-4">
+    <!-- 流量趋势图 -->
+    <div class="col-xl-8 col-lg-7">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-graph-up"></i>
+                    流量趋势
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-area" style="position: relative; height: 300px;">
+                    <canvas id="trafficChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 国家分布 -->
+    <div class="col-xl-4 col-lg-5">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-flag"></i>
+                    国家分布
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="chart-pie pt-4 pb-2" style="position: relative; height: 250px;">
+                    <canvas id="countryChart"></canvas>
+                </div>
+                <div class="mt-4 text-center small">
+                    {{range $index, $country := .CountryStats}}
+                    {{if lt $index 5}}
+                    <span class="mr-2">
+                        <i class="fas fa-circle text-primary"></i> {{.Country}}
+                    </span>
+                    {{end}}
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 地理位置分布世界地图 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-globe"></i>
+                    地理位置分布
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="worldMap" style="height: 400px; width: 100%;"></div>
+                <div class="mt-3 text-center small text-muted">
+                    基于访客IP地址的地理位置分布图
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 数据表格区域 -->
+<div class="row">
+    <!-- 热门内容 -->
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-fire"></i>
+                    热门内容
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>访问量</th>
+                                <th>总访问</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .PopularContents}}
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong>{{.Title}}</strong>
+                                        {{if .Description}}
+                                        <br><small class="text-muted">{{.Description}}</small>
+                                        {{end}}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{.RecentViews}}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">{{.ViewCount}}</span>
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">暂无数据</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 用户活跃度 -->
+    <div class="col-xl-6 col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-person-check"></i>
+                    用户活跃度
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>用户</th>
+                                <th>内容数</th>
+                                <th>访问量</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{range .UserActivityStats}}
+                            <tr>
+                                <td>
+                                    <strong>{{.Username}}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-success">{{.ContentCount}}</span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{.ViewCount}}</span>
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">暂无数据</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 来源统计 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-link-45deg"></i>
+                    访问来源统计
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>来源</th>
+                                <th>访问次数</th>
+                                <th>占比</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{$total := 0}}
+                            {{range .RefererStats}}
+                                {{$total = add $total .Count}}
+                            {{end}}
+                            {{range .RefererStats}}
+                            <tr>
+                                <td>
+                                    {{if .Referer}}
+                                        <a href="{{.Referer}}" target="_blank" class="text-decoration-none">
+                                            {{.Referer}}
+                                        </a>
+                                    {{else}}
+                                        <span class="text-muted">直接访问</span>
+                                    {{end}}
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">{{.Count}}</span>
+                                </td>
+                                <td>
+                                    {{if gt $total 0}}
+                                        <div class="progress" style="height: 20px;">
+                                            <div class="progress-bar" role="progressbar"
+                                                 style="width: {{div (mul .Count 100) $total}}%">
+                                                {{div (mul .Count 100) $total}}%
+                                            </div>
+                                        </div>
+                                    {{else}}
+                                        0%
+                                    {{end}}
+                                </td>
+                            </tr>
+                            {{else}}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted">暂无数据</td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{end}}
+
+{{define "analytics-scripts"}}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Leaflet for world map -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+// 等待DOM加载完成
+document.addEventListener('DOMContentLoaded', function() {
+    // 流量趋势图
+    const trafficCtx = document.getElementById('trafficChart').getContext('2d');
+const trafficData = {
+    labels: [
+        {{range .TrafficStats}}
+        '{{.Date}}',
+        {{end}}
+    ],
+    datasets: [{
+        label: '访问量',
+        data: [
+            {{range .TrafficStats}}
+            {{.Views}},
+            {{end}}
+        ],
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.1
+    }, {
+        label: '独立IP',
+        data: [
+            {{range .TrafficStats}}
+            {{.UniqueIPs}},
+            {{end}}
+        ],
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        tension: 0.1
+    }]
+};
+
+const trafficChart = new Chart(trafficCtx, {
+    type: 'line',
+    data: trafficData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: '访问趋势'
+            }
+        }
+    }
+});
+
+// 国家分布饼图
+const countryCtx = document.getElementById('countryChart').getContext('2d');
+const countryData = {
+    labels: [
+        {{range .CountryStats}}
+        '{{.Country}}',
+        {{end}}
+    ],
+    datasets: [{
+        data: [
+            {{range .CountryStats}}
+            {{.Count}},
+            {{end}}
+        ],
+        backgroundColor: [
+            '#FF6384',
+            '#36A2EB',
+            '#FFCE56',
+            '#4BC0C0',
+            '#9966FF',
+            '#FF9F40',
+            '#FF6384',
+            '#C9CBCF',
+            '#4BC0C0',
+            '#FF6384'
+        ]
+    }]
+};
+
+const countryChart = new Chart(countryCtx, {
+    type: 'doughnut',
+    data: countryData,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                display: false
+            },
+            title: {
+                display: true,
+                text: '国家分布'
+            }
+        }
+    }
+});
+
+// 世界地图
+const map = L.map('worldMap').setView([20, 0], 2);
+
+// 添加地图瓦片
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// 添加地理位置标记
+const geoData = [
+    {{range .GeoStats}}
+    {
+        country: '{{.Country}}',
+        region: '{{.Region}}',
+        city: '{{.City}}',
+        count: {{.Count}},
+        // 这里应该使用真实的经纬度，暂时使用示例坐标
+        lat: {{if .Country}}{{if eq .Country "Local"}}39.9042{{else if eq .Country "China"}}35.8617{{else if eq .Country "Japan"}}36.2048{{else if eq .Country "Germany"}}51.1657{{else}}0{{end}}{{else}}0{{end}},
+        lng: {{if .Country}}{{if eq .Country "Local"}}116.4074{{else if eq .Country "China"}}104.1954{{else if eq .Country "Japan"}}138.2529{{else if eq .Country "Germany"}}10.4515{{else}}0{{end}}{{else}}0{{end}}
+    },
+    {{end}}
+];
+
+// 添加标记到地图
+geoData.forEach(function(location) {
+    if (location.lat !== 0 || location.lng !== 0) {
+        const marker = L.circleMarker([location.lat, location.lng], {
+            radius: Math.max(5, Math.min(20, location.count * 2)),
+            fillColor: '#FF6384',
+            color: '#fff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.7
+        }).addTo(map);
+
+        marker.bindPopup(`
+            <strong>${location.country}</strong><br>
+            ${location.region ? location.region + '<br>' : ''}
+            ${location.city ? location.city + '<br>' : ''}
+            访问次数: ${location.count}
+        `);
+    }
+});
+
+// 自动刷新功能
+function refreshData() {
+    // 可以添加AJAX刷新功能
+    console.log('刷新统计数据...');
+}
+
+// 每5分钟自动刷新一次
+setInterval(refreshData, 5 * 60 * 1000);
+
+// 导出功能
+function exportData(type) {
+    switch(type) {
+        case 'csv':
+            exportToCSV();
+            break;
+        case 'pdf':
+            exportToPDF();
+            break;
+        case 'excel':
+            exportToExcel();
+            break;
+    }
+}
+
+function exportToCSV() {
+    // 实现CSV导出
+    alert('CSV导出功能开发中...');
+}
+
+function exportToPDF() {
+    // 实现PDF导出
+    alert('PDF导出功能开发中...');
+}
+
+function exportToExcel() {
+    // 实现Excel导出
+    alert('Excel导出功能开发中...');
+}
+
+// 实时数据更新
+function updateRealTimeStats() {
+    fetch('/admin/api/analytics/realtime')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 更新实时统计数据
+                updateStatsCards(data.stats);
+            }
+        })
+        .catch(error => {
+            console.error('获取实时数据失败:', error);
+        });
+}
+
+function updateStatsCards(stats) {
+    // 更新统计卡片数据
+    // 这里可以实现实时数据更新
+}
+
+}); // 结束第一个DOMContentLoaded事件监听器
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('统计分析页面加载完成');
+
+    // 可以添加更多初始化逻辑
+    // 比如工具提示、数据表格排序等
+});
+</script>
+{{end}}

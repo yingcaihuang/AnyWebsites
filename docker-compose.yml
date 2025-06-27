@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: anywebsites
+      POSTGRES_USER: anywebsites
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U anywebsites"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - anywebsites_network
+
+  redis:
+    image: redis:7-alpine
+    expose:
+      - "6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - anywebsites_network
+
+  app:
+    build: .
+    expose:
+      - "8085"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=anywebsites
+      - DB_PASSWORD=password
+      - DB_NAME=anywebsites
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    volumes:
+      - ./uploads:/app/uploads
+      - ./data/geoip:/app/data/geoip
+    networks:
+      - anywebsites_network
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+      - "8443:443"
+    depends_on:
+      - app
+    volumes:
+      - nginx_ssl:/etc/nginx/ssl
+    networks:
+      - anywebsites_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  nginx_ssl:
+
+networks:
+  anywebsites_network:
+    driver: bridge
