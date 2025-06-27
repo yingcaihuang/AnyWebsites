@@ -20,7 +20,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o main cmd/server/main.go
 # 运行阶段
 FROM alpine:latest
 
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates wget
 
 WORKDIR /app
 
