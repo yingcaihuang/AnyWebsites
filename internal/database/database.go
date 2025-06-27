@@ -50,9 +50,10 @@ func Migrate() error {
 		log.Printf("Warning: failed to create uuid-ossp extension: %v", err)
 	}
 
-	// 跳过自动迁移 - 开发环境
-	log.Println("Skipping database migration for development environment")
-
+	log.Println("Starting database migration")
+	if err := DB.AutoMigrate(&models.User{}, &models.Content{}, &models.PlanConfig{}); err != nil {
+		return fmt.Errorf("failed to migrate database: %w", err)
+	}
 	log.Println("Database migration completed successfully")
 
 	// 初始化系统设置
