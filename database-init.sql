@@ -40,9 +40,14 @@ CREATE TABLE IF NOT EXISTS contents (
     body TEXT NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     expires_at TIMESTAMP,
+    deleted_at TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- 创建内容索引
+CREATE INDEX IF NOT EXISTS idx_contents_user_active ON contents(user_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_contents_expires_at ON contents(expires_at);
 
 -- 创建计划配置表
 CREATE TABLE IF NOT EXISTS plan_configs (
@@ -56,6 +61,31 @@ CREATE TABLE IF NOT EXISTS plan_configs (
 );
 
 -- 创建索引
-CREATE INDEX IF NOT EXISTS idx_contents_user_active ON contents(user_id, is_active);
-CREATE INDEX IF NOT EXISTS idx_contents_expires_at ON contents(expires_at);
 CREATE INDEX IF NOT EXISTS idx_plan_configs_active ON plan_configs(is_active);
+
+-- 创建用户订阅表
+CREATE TABLE IF NOT EXISTS user_subscriptions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    plan_id UUID NOT NULL REFERENCES plan_configs(id),
+    status VARCHAR(50) NOT NULL,
+    expires_at TIMESTAMP,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 创建用户订阅索引
+CREATE INDEX IF NOT EXISTS idx_user_subscriptions_status ON user_subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_user_subscriptions_expires_at ON user_subscriptions(expires_at);
+
+-- 创建使用统计表
+CREATE TABLE IF NOT EXISTS usage_statistics (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id),
+    month_year VARCHAR(7) NOT NULL,
+    usage_count INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 创建使用统计索引
+CREATE INDEX IF NOT EXISTS idx_usage_statistics_month_year ON usage_statistics(month_year);
