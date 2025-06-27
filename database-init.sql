@@ -89,3 +89,18 @@ CREATE TABLE IF NOT EXISTS usage_statistics (
 
 -- 创建使用统计索引
 CREATE INDEX IF NOT EXISTS idx_usage_statistics_month_year ON usage_statistics(month_year);
+
+-- 创建系统设置分类表
+CREATE TABLE IF NOT EXISTS system_setting_categories (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(255) NOT NULL UNIQUE,
+    display_name VARCHAR(255) NOT NULL,
+    description TEXT,
+    icon VARCHAR(255),
+    sort_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 创建系统设置分类索引
+CREATE INDEX IF NOT EXISTS idx_system_setting_categories_sort_order ON system_setting_categories(sort_order);
