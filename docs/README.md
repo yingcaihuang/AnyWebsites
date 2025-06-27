@@ -25,12 +25,12 @@ AnyWebsites 是一个功能强大的 HTML 页面托管服务平台，基于 Gola
 
 ### 访问 API 文档
 
-- **Swagger UI**: [https://localhost:8443/docs/swagger-ui.html](https://localhost:8443/docs/swagger-ui.html)
-- **OpenAPI 规范**: [https://localhost:8443/docs/swagger.yaml](https://localhost:8443/docs/swagger.yaml)
+- **Swagger UI**: [https://localhost/docs/swagger-ui.html](https://localhost/docs/swagger-ui.html)
+- **OpenAPI 规范**: [https://localhost/docs/swagger.yaml](https://localhost/docs/swagger.yaml)
 
 ### 基础信息
 
-- **API 基础 URL**: `https://localhost:8443`
+- **API 基础 URL**: `https://localhost`
 - **API 版本**: v1.0.0
 - **支持格式**: JSON
 - **字符编码**: UTF-8
@@ -42,7 +42,7 @@ AnyWebsites 是一个功能强大的 HTML 页面托管服务平台，基于 Gola
 
 ```bash
 curl -H "Authorization: Bearer <your-jwt-token>" \
-     https://localhost:8443/api/content
+     https://localhost/api/content
 ```
 
 ### 2. API Key
@@ -51,10 +51,10 @@ curl -H "Authorization: Bearer <your-jwt-token>" \
 ```bash
 # 请求头方式
 curl -H "X-API-Key: <your-api-key>" \
-     https://localhost:8443/api/content
+     https://localhost/api/content
 
 # 查询参数方式
-curl "https://localhost:8443/api/content?api_key=<your-api-key>"
+curl "https://localhost/api/content?api_key=<your-api-key>"
 ```
 
 ### 3. Admin Session
@@ -62,7 +62,7 @@ curl "https://localhost:8443/api/content?api_key=<your-api-key>"
 
 ```bash
 curl -b "admin_session=<session-id>" \
-     https://localhost:8443/admin/api/users
+     https://localhost/admin/api/users
 ```
 
 ## 📋 API 分类
@@ -118,7 +118,7 @@ curl -b "admin_session=<session-id>" \
 
 ```bash
 # 1. 注册用户
-curl -X POST https://localhost:8443/api/auth/register \
+curl -X POST https://localhost/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -127,7 +127,7 @@ curl -X POST https://localhost:8443/api/auth/register \
   }'
 
 # 2. 用户登录
-curl -X POST https://localhost:8443/api/auth/login \
+curl -X POST https://localhost/api/auth/login \
   -H "Content-Type: application/json" \
   -d '{
     "username": "testuser",
@@ -139,7 +139,7 @@ curl -X POST https://localhost:8443/api/auth/login \
 
 ```bash
 # 1. 上传 HTML 内容
-curl -X POST https://localhost:8443/api/content/upload \
+curl -X POST https://localhost/api/content/upload \
   -H "Authorization: Bearer <your-token>" \
   -H "Content-Type: application/json" \
   -d '{
@@ -151,10 +151,10 @@ curl -X POST https://localhost:8443/api/content/upload \
 
 # 2. 获取内容列表
 curl -H "Authorization: Bearer <your-token>" \
-     https://localhost:8443/api/content
+     https://localhost/api/content
 
 # 3. 访问发布的页面
-curl https://localhost:8443/view/<content-id>
+curl https://localhost/view/<content-id>
 ```
 
 ### 管理后台操作
@@ -162,15 +162,15 @@ curl https://localhost:8443/view/<content-id>
 ```bash
 # 1. 获取用户详情（需要管理员权限）
 curl -b "admin_session=<session-id>" \
-     https://localhost:8443/admin/api/users/<user-id>/details
+     https://localhost/admin/api/users/<user-id>/details
 
 # 2. 获取系统设置
 curl -b "admin_session=<session-id>" \
-     https://localhost:8443/admin/api/settings
+     https://localhost/admin/api/settings
 
 # 3. 获取地理位置统计
 curl -b "admin_session=<session-id>" \
-     "https://localhost:8443/admin/api/geoip-stats?range=7d"
+     "https://localhost/admin/api/geoip-stats?range=7d"
 ```
 
 ## 📝 响应格式
@@ -206,7 +206,7 @@ curl -b "admin_session=<session-id>" \
 
 ## 📚 数据模型
 
-详细的数据模型定义请参考 [Swagger UI](https://localhost:8443/docs/swagger-ui.html) 中的 "Schemas" 部分。
+详细的数据模型定义请参考 [Swagger UI](https://localhost/docs/swagger-ui.html) 中的 "Schemas" 部分。
 
 主要模型包括：
 - **User** - 用户信息
@@ -221,7 +221,7 @@ curl -b "admin_session=<session-id>" \
 可以将 OpenAPI 规范导入到 Postman 中：
 1. 打开 Postman
 2. 点击 "Import"
-3. 输入 URL: `https://localhost:8443/docs/swagger.yaml`
+3. 输入 URL: `https://localhost/docs/swagger.yaml`
 
 ### cURL 脚本
 所有 API 端点都可以通过 cURL 进行测试，具体示例请参考 Swagger UI 中的 "Try it out" 功能。
@@ -230,7 +230,7 @@ curl -b "admin_session=<session-id>" \
 
 如有问题或建议，请联系：
 - 邮箱: support@anywebsites.com
-- 文档: [Swagger UI](https://localhost:8443/docs/swagger-ui.html)
+- 文档: [Swagger UI](https://localhost/docs/swagger-ui.html)
 
 ---
 

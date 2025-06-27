@@ -61,13 +61,13 @@ func InitializeDefaultAdmins() error {
 ## 2. Nginx 虚拟主机配置
 
 ### 功能描述
-配置 Nginx 支持多个虚拟主机，默认支持 localhost 和 anywebsites.mypet.run 两个域名。
+配置 Nginx 支持多个虚拟主机，默认支持 localhost 和 anywebsites.gslb.vip 两个域名。
 
 ### 实现细节
 
 #### 支持的域名
 - **localhost**: 本地开发访问
-- **anywebsites.mypet.run**: 外部域名访问
+- **anywebsites.gslb.vip**: 外部域名访问
 
 #### 配置特性
 - **HTTP 自动重定向**: 所有 HTTP 请求自动重定向到 HTTPS
@@ -94,10 +94,10 @@ server {
     # 健康检查 + HTTPS 重定向
 }
 
-# HTTP 服务器配置 - anywebsites.mypet.run
+# HTTP 服务器配置 - anywebsites.gslb.vip
 server {
     listen 80;
-    server_name anywebsites.mypet.run;
+    server_name anywebsites.gslb.vip;
     # 健康检查 + HTTPS 重定向
 }
 
@@ -108,10 +108,10 @@ server {
     # SSL 配置 + 代理设置
 }
 
-# HTTPS 服务器配置 - anywebsites.mypet.run
+# HTTPS 服务器配置 - anywebsites.gslb.vip
 server {
     listen 443 ssl http2;
-    server_name anywebsites.mypet.run;
+    server_name anywebsites.gslb.vip;
     # SSL 配置 + 代理设置
 }
 ```
@@ -174,7 +174,7 @@ server {
 - ✅ 账户具有管理员权限
 
 ### 2. Nginx 虚拟主机测试
-- ✅ localhost:8443 正常访问
+- ✅ localhost 正常访问
 - ✅ HTTP 到 HTTPS 重定向正常
 - ✅ 健康检查端点正常工作
 - ✅ 真实 IP 获取功能正常
@@ -187,9 +187,9 @@ server {
 ## 访问地址
 
 ### 主要访问地址
-- **管理后台**: https://localhost:8443/admin/login
-- **健康检查**: https://localhost:8443/health
-- **API 接口**: https://localhost:8443/api/
+- **管理后台**: https://localhost/admin/login
+- **健康检查**: https://localhost/health
+- **API 接口**: https://localhost/api/
 
 ### 默认登录信息
 ```
@@ -214,7 +214,7 @@ server {
 ### 开发环境使用
 - 可以直接使用默认账户进行开发测试
 - 自签名证书在浏览器中会显示安全警告，属于正常现象
-- 建议在本地 hosts 文件中添加 anywebsites.mypet.run 域名映射
+- 建议在本地 hosts 文件中添加 anywebsites.gslb.vip 域名映射
 
 ## 总结
 

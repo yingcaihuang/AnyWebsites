@@ -32,7 +32,7 @@ type ErrorResponse struct {
 
 const (
 	// API 配置
-	BaseURL = "https://localhost:8443"
+	BaseURL = "https://localhost"
 	APIKey  = "1e278ff1-881a-47e6-ad8c-f779e715"
 )
 
@@ -350,22 +350,22 @@ volumes:
 	// 上传每篇文章
 	for i, article := range articles {
 		fmt.Printf("\n📝 正在上传第 %d 篇文章: %s\n", i+1, article.Title)
-		
+
 		contentID, viewURL, err := uploadContent(client, article)
 		if err != nil {
 			fmt.Printf("❌ 上传失败: %v\n", err)
 			continue
 		}
-		
+
 		fmt.Printf("✅ 上传成功!\n")
 		fmt.Printf("   📋 内容ID: %s\n", contentID)
 		fmt.Printf("   🔗 访问链接: %s%s\n", BaseURL, viewURL)
 		fmt.Printf("   🌐 浏览器访问: %s%s\n", BaseURL, viewURL)
-		
+
 		// 等待一秒再上传下一篇
 		time.Sleep(1 * time.Second)
 	}
-	
+
 	fmt.Println("\n🎉 所有文章上传完成！")
 	fmt.Println("💡 您可以通过上面的链接访问您的文章。")
 }

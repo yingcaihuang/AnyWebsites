@@ -189,7 +189,7 @@ func main() {
 	fmt.Println(strings.Repeat("=", 50))
 
 	// 创建API客户端
-	client := NewAPIClient("https://localhost:8443")
+	client := NewAPIClient("https://localhost")
 
 	// 测试1: 管理员登录
 	fmt.Println("\n📝 测试1: 管理员登录")
