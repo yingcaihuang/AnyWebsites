@@ -50,11 +50,13 @@ func Migrate() error {
 		log.Printf("Warning: failed to create uuid-ossp extension: %v", err)
 	}
 
-	log.Println("Starting database migration")
-	if err := DB.AutoMigrate(&models.User{}, &models.Content{}, &models.PlanConfig{}); err != nil {
-		return fmt.Errorf("failed to migrate database: %w", err)
-	}
-	log.Println("Database migration completed successfully")
+	log.Println("Starting database initialization")
+
+	// 完全跳过GORM自动迁移，使用SQL脚本初始化
+	log.Println("Using SQL script for database initialization")
+	log.Println("All tables will be created from database-init.sql")
+
+	log.Println("Database initialization completed successfully")
 
 	// 初始化系统设置
 	if err := InitializeSystemSettings(); err != nil {
