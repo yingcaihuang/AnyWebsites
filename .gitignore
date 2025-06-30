@@ -50,6 +50,7 @@ logs/
 # Docker volumes and data
 docker-data/
 postgres-data/
+postgres_data/
 redis-data/
 
 # Uploads directory
