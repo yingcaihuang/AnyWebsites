@@ -22,6 +22,8 @@ services:
       - anywebsites_network
     command: >
       bash -c "rm -rf /var/lib/postgresql/data/* && psql -U $POSTGRES_USER -d $POSTGRES_DB -c 'SELECT * FROM system_setting_categories;' && echo 'Database initialization complete'"
+    env_file:
+      - .env
 
   redis:
     image: redis:7-alpine
@@ -31,6 +33,8 @@ services:
       - redis_data:/data
     networks:
       - anywebsites_network
+    env_file:
+      - .env
 
   app:
     build: .
@@ -61,6 +65,8 @@ services:
       timeout: 10s
       retries: 5
       start_period: 40s
+    env_file:
+      - .env
 
   nginx:
     build:
