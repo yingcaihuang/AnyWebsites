@@ -44,7 +44,6 @@ logs/
 *.sqlite3
 
 # Environment files
-.env
 .env.local
 .env.production
 
