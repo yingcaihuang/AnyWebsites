@@ -11,8 +11,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
       - ./database-init.sql:/docker-entrypoint-initdb.d/database-init.sql
+      - ./postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U anywebsites"]
       interval: 30s
@@ -21,7 +21,7 @@ services:
     networks:
       - anywebsites_network
     command: >
-      bash -c "psql -U $POSTGRES_USER -d $POSTGRES_DB -c 'SELECT * FROM system_setting_categories;' && echo 'Database initialization complete'"
+      bash -c "rm -rf /var/lib/postgresql/data/* && psql -U $POSTGRES_USER -d $POSTGRES_DB -c 'SELECT * FROM system_setting_categories;' && echo 'Database initialization complete'"
 
   redis:
     image: redis:7-alpine
