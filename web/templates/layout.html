@@ -217,6 +217,12 @@
                     {{template "geoip-monitor" .}}
                 {{else if eq .Page "settings"}}
                     {{template "settings-content" .}}
+                {{else if eq .Page "user-plans"}}
+                    {{template "user-plans-content" .}}
+                {{else if eq .Page "user-plan-edit"}}
+                    {{template "user-plan-edit-content" .}}
+                {{else if eq .Page "plan-stats"}}
+                    {{template "plan-stats-content" .}}
                 {{else}}
                     <div class="alert alert-warning">
                         <h4>页面未找到</h4>

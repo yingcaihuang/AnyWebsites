@@ -26,8 +26,8 @@ func NewContentHandler(geoipService *services.GeoIPService) *ContentHandler {
 // Upload 上传 HTML 内容
 func (h *ContentHandler) Upload(c *gin.Context) {
 	var req struct {
-		Title       string `json:"title"`
-		HTMLContent string `json:"html_content" binding:"required"`
+		Title   string `json:"title"`
+		Content string `json:"content" binding:"required"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -41,8 +41,8 @@ func (h *ContentHandler) Upload(c *gin.Context) {
 	content := &models.Content{
 		UserID:      defaultUserID,
 		Title:       req.Title,
-		HTMLContent: req.HTMLContent,
-		IsPublic:    true,
+		Content:     req.Content,
+		ContentType: "text/html",
 		IsActive:    true,
 	}
 
@@ -150,7 +150,7 @@ func (h *ContentHandler) View(c *gin.Context) {
 
 	// 返回 HTML 内容
 	c.Header("Content-Type", "text/html; charset=utf-8")
-	c.String(http.StatusOK, content.HTMLContent)
+	c.String(http.StatusOK, content.Content)
 }
 
 // Update 更新内容

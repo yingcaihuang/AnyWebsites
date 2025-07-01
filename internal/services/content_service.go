@@ -1,8 +1,6 @@
 package services
 
 import (
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
 	"time"
@@ -29,20 +27,16 @@ func NewContentService(geoipService *GeoIPService) *ContentService {
 type UploadRequest struct {
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
-	HTMLContent string     `json:"html_content" binding:"required"`
-	IsPublic    bool       `json:"is_public"`
+	Content     string     `json:"content" binding:"required"`
 	ExpiresAt   *time.Time `json:"expires_at"`
-	AccessCode  string     `json:"access_code"`
 }
 
 // UpdateRequest 更新内容请求
 type UpdateRequest struct {
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
-	HTMLContent string     `json:"html_content"`
-	IsPublic    *bool      `json:"is_public"`
+	Content     string     `json:"content"`
 	ExpiresAt   *time.Time `json:"expires_at"`
-	AccessCode  string     `json:"access_code"`
 }
 
 func (s *ContentService) Upload(userID uuid.UUID, req *UploadRequest) (*models.Content, error) {
@@ -74,18 +68,10 @@ func (s *ContentService) Upload(userID uuid.UUID, req *UploadRequest) (*models.C
 		UserID:      userID,
 		Title:       req.Title,
 		Description: req.Description,
-		HTMLContent: req.HTMLContent,
-		IsPublic:    req.IsPublic,
+		Content:     req.Content,
+		ContentType: "text/html",
 		ExpiresAt:   expiresAt,
-		AccessCode:  req.AccessCode,
 		IsActive:    true,
-	}
-
-	if !req.IsPublic && req.AccessCode == "" {
-		// 生成随机访问码
-		bytes := make([]byte, 16)
-		rand.Read(bytes)
-		content.AccessCode = hex.EncodeToString(bytes)
 	}
 
 	// 开始事务
@@ -192,17 +178,11 @@ func (s *ContentService) Update(userID, contentID uuid.UUID, req *UpdateRequest)
 	if req.Description != "" {
 		content.Description = req.Description
 	}
-	if req.HTMLContent != "" {
-		content.HTMLContent = req.HTMLContent
-	}
-	if req.IsPublic != nil {
-		content.IsPublic = *req.IsPublic
+	if req.Content != "" {
+		content.Content = req.Content
 	}
 	if req.ExpiresAt != nil {
 		content.ExpiresAt = req.ExpiresAt
-	}
-	if req.AccessCode != "" {
-		content.AccessCode = req.AccessCode
 	}
 
 	if err := database.DB.Save(&content).Error; err != nil {
@@ -234,12 +214,12 @@ func (s *ContentService) ViewContent(contentID uuid.UUID, accessCode string, cli
 		return nil, err
 	}
 
-	if !content.CanAccess(accessCode) {
+	if !content.CanAccess() {
 		return nil, errors.New("access denied")
 	}
 
 	// 增加访问计数
-	database.DB.Model(content).UpdateColumn("view_count", gorm.Expr("view_count + ?", 1))
+	database.DB.Model(content).UpdateColumn("access_count", gorm.Expr("access_count + ?", 1))
 
 	// 记录访问统计
 	analytics := &models.ContentAnalytics{
@@ -260,12 +240,12 @@ func (s *ContentService) ViewContentWithAnalytics(contentID uuid.UUID, accessCod
 		return nil, err
 	}
 
-	if !content.CanAccess(accessCode) {
+	if !content.CanAccess() {
 		return nil, errors.New("access denied")
 	}
 
 	// 增加访问计数
-	database.DB.Model(content).UpdateColumn("view_count", gorm.Expr("view_count + ?", 1))
+	database.DB.Model(content).UpdateColumn("access_count", gorm.Expr("access_count + ?", 1))
 
 	// 异步记录详细的访问统计
 	go s.recordAnalyticsAsync(contentID, content.UserID, clientIP, userAgent, referer)

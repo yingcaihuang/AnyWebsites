@@ -11,15 +11,16 @@ import (
 type Content struct {
 	ID          uuid.UUID  `json:"id" gorm:"type:uuid;primaryKey;default:gen_random_uuid()"`
 	UserID      uuid.UUID  `json:"user_id" gorm:"type:uuid;not null;index"`
-	Title       string     `json:"title" gorm:"size:200"`
+	Title       string     `json:"title" gorm:"size:255"`
 	Description string     `json:"description" gorm:"size:500"`
-	HTMLContent string     `json:"html_content" gorm:"type:text;not null"`
-	AccessCode  string     `json:"access_code,omitempty" gorm:"size:64"` // 加密访问码
-	IsPublic    bool       `json:"is_public" gorm:"default:true"`
+	Content     string     `json:"content" gorm:"type:text;not null;column:content"`
+	ContentType string     `json:"content_type" gorm:"size:50;default:'text/html'"`
+	FilePath    string     `json:"file_path" gorm:"size:500"`
+	FileSize    int64      `json:"file_size" gorm:"default:0"`
 	ExpiresAt   *time.Time `json:"expires_at,omitempty"`
-	ViewCount   int64      `json:"view_count" gorm:"default:0"`
 	IsActive    bool       `json:"is_active" gorm:"default:true"`
 	DeletedAt   *time.Time `json:"deleted_at,omitempty"`
+	AccessCount int        `json:"access_count" gorm:"default:0"`
 	CreatedAt   time.Time  `json:"created_at"`
 	UpdatedAt   time.Time  `json:"updated_at"`
 
@@ -45,15 +46,12 @@ func (c *Content) IsExpired() bool {
 }
 
 // CanAccess 检查是否可以访问内容
-func (c *Content) CanAccess(accessCode string) bool {
+func (c *Content) CanAccess() bool {
 	if !c.IsActive {
 		return false
 	}
 	if c.IsExpired() {
 		return false
 	}
-	if c.IsPublic {
-		return true
-	}
-	return c.AccessCode == accessCode
+	return true
 }

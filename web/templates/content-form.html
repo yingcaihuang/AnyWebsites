@@ -50,8 +50,8 @@
                     </div>
 
                     <div class="mb-3">
-                        <label for="html_content" class="form-label">HTML 内容 <span class="text-danger">*</span></label>
-                        <textarea class="form-control" id="html_content" name="html_content" rows="15" 
+                        <label for="content" class="form-label">HTML 内容 <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="content" name="content" rows="15"
                                   placeholder="请输入 HTML 内容" required>{{.HtmlContent}}</textarea>
                         <div class="form-text">
                             <i class="bi bi-info-circle"></i>
@@ -116,7 +116,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <small class="text-muted">访问量</small>
-                        <div>{{.Content.ViewCount}} 次</div>
+                        <div>{{.Content.AccessCount}} 次</div>
                     </div>
                     <div class="col-md-6">
                         <small class="text-muted">状态</small>
@@ -172,7 +172,7 @@
 {{define "content-form-scripts"}}
 <script>
 function previewContent() {
-    const htmlContent = document.getElementById('html_content').value;
+    const htmlContent = document.getElementById('content').value;
     if (!htmlContent.trim()) {
         alert('请先输入 HTML 内容');
         return;
@@ -202,7 +202,7 @@ function autoSave() {
     autoSaveTimer = setTimeout(() => {
         const title = document.getElementById('title').value;
         const description = document.getElementById('description').value;
-        const htmlContent = document.getElementById('html_content').value;
+        const htmlContent = document.getElementById('content').value;
         
         if (title || description || htmlContent) {
             localStorage.setItem('content_draft', JSON.stringify({
@@ -225,7 +225,7 @@ function restoreDraft() {
         if (!isEdit && confirm('发现未保存的草稿，是否恢复？')) {
             document.getElementById('title').value = data.title || '';
             document.getElementById('description').value = data.description || '';
-            document.getElementById('html_content').value = data.html_content || '';
+            document.getElementById('content').value = data.html_content || '';
         }
     }
 }
@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
     restoreDraft();
     
     // 绑定自动保存事件
-    ['title', 'description', 'html_content'].forEach(id => {
+    ['title', 'description', 'content'].forEach(id => {
         document.getElementById(id).addEventListener('input', autoSave);
     });
     

@@ -381,7 +381,7 @@ func (h *AdminHandler) CreateContent(c *gin.Context) {
 
 	title := c.PostForm("title")
 	description := c.PostForm("description")
-	htmlContent := c.PostForm("html_content")
+	htmlContent := c.PostForm("content")
 
 	if title == "" || htmlContent == "" {
 		username, _ := c.Get("username")
@@ -402,8 +402,8 @@ func (h *AdminHandler) CreateContent(c *gin.Context) {
 		UserID:      userID.(uuid.UUID),
 		Title:       title,
 		Description: description,
-		HTMLContent: htmlContent,
-		IsPublic:    true,
+		Content:     htmlContent,
+		ContentType: "text/html",
 		IsActive:    true,
 	}
 
@@ -456,7 +456,7 @@ func (h *AdminHandler) EditContent(c *gin.Context) {
 		"Content":     content,
 		"Title_":      content.Title,
 		"Description": content.Description,
-		"HtmlContent": content.HTMLContent,
+		"HtmlContent": content.Content,
 	})
 }
 
@@ -483,7 +483,7 @@ func (h *AdminHandler) UpdateContent(c *gin.Context) {
 
 	title := c.PostForm("title")
 	description := c.PostForm("description")
-	htmlContent := c.PostForm("html_content")
+	htmlContent := c.PostForm("content")
 
 	if title == "" || htmlContent == "" {
 		username, _ := c.Get("username")
@@ -503,7 +503,7 @@ func (h *AdminHandler) UpdateContent(c *gin.Context) {
 
 	content.Title = title
 	content.Description = description
-	content.HTMLContent = htmlContent
+	content.Content = htmlContent
 
 	if err := database.DB.Save(&content).Error; err != nil {
 		username, _ := c.Get("username")
