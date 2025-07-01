@@ -191,84 +191,97 @@ VALUES
 -- 插入系统设置分类
 INSERT INTO system_setting_categories (id, name, display_name, description, icon, sort_order, is_active)
 VALUES
-    ('c1111111-1111-1111-1111-111111111111', 'server', '服务器设置', '服务器相关配置，包括端口、主机等', 'bi-server', 1, TRUE),
-    ('c2222222-2222-2222-2222-222222222222', 'database', '数据库设置', '数据库连接和配置参数', 'bi-database', 2, TRUE),
-    ('c3333333-3333-3333-3333-333333333333', 'upload', '上传设置', '文件上传相关配置', 'bi-cloud-upload', 3, TRUE),
-    ('c4444444-4444-4444-4444-444444444444', 'security', '安全设置', '安全相关配置，包括JWT、限流等', 'bi-shield-check', 4, TRUE),
-    ('c5555555-5555-5555-5555-555555555555', 'geoip', '地理位置设置', 'GeoIP服务相关配置', 'bi-globe', 5, TRUE),
-    ('c6666666-6666-6666-6666-666666666666', 'system', '系统设置', '系统级别的配置参数', 'bi-gear', 6, TRUE);
+    ('11111111-1111-1111-1111-111111111111', 'server', '服务器设置', '服务器相关配置，包括端口、主机等', 'bi-server', 1, TRUE),
+    ('22222222-2222-2222-2222-222222222222', 'database', '数据库设置', '数据库连接和配置参数', 'bi-database', 2, TRUE),
+    ('33333333-3333-3333-3333-333333333333', 'upload', '上传设置', '文件上传相关配置', 'bi-cloud-upload', 3, TRUE),
+    ('44444444-4444-4444-4444-444444444444', 'security', '安全设置', '安全相关配置，包括JWT、限流等', 'bi-shield-check', 4, TRUE),
+    ('55555555-5555-5555-5555-555555555555', 'geoip', '地理位置设置', 'GeoIP服务相关配置', 'bi-globe', 5, TRUE),
+    ('66666666-6666-6666-6666-666666666666', 'system', '系统设置', '系统级别的配置参数', 'bi-gear', 6, TRUE);
 
 -- 插入用户订阅（为测试用户分配计划）
 INSERT INTO user_subscriptions (id, user_id, plan_id, status, starts_at, expires_at, auto_renew)
 VALUES
-    ('s1111111-1111-1111-1111-111111111111', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '33333333-3333-3333-3333-333333333333', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '1 year', TRUE),
-    ('s2222222-2222-2222-2222-222222222222', '56ecc01e-9ffc-4515-8932-19912ce0805d', '33333333-3333-3333-3333-333333333333', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '1 year', TRUE),
-    ('s3333333-3333-3333-3333-333333333333', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', '22222222-2222-2222-2222-222222222222', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '1 month', FALSE),
-    ('s4444444-4444-4444-4444-444444444444', 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff', '11111111-1111-1111-1111-111111111111', 'active', CURRENT_TIMESTAMP, NULL, FALSE);
+    ('11111111-1111-1111-1111-111111111112', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '33333333-3333-3333-3333-333333333333', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '1 year', TRUE),
+    ('22222222-2222-2222-2222-222222222223', '56ecc01e-9ffc-4515-8932-19912ce0805d', '33333333-3333-3333-3333-333333333333', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '1 year', TRUE),
+    ('33333333-3333-3333-3333-333333333334', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', '22222222-2222-2222-2222-222222222222', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP + INTERVAL '1 month', FALSE),
+    ('44444444-4444-4444-4444-444444444445', 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff', '11111111-1111-1111-1111-111111111111', 'active', CURRENT_TIMESTAMP, NULL, FALSE);
 
 -- 插入测试内容
 INSERT INTO contents (id, user_id, title, content, content_type, access_count, created_at)
 VALUES
-    ('c0000001-1111-1111-1111-111111111111', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '欢迎使用 AnyWebsites', '这是一个示例文本内容，展示了 AnyWebsites 的基本功能。您可以上传文本、图片、文档等各种类型的文件。', 'text/plain', 156, CURRENT_TIMESTAMP - INTERVAL '7 days'),
-    ('c0000002-2222-2222-2222-222222222222', '56ecc01e-9ffc-4515-8932-19912ce0805d', 'API 使用指南', '# API 使用指南\n\n## 认证\n使用 Bearer Token 进行认证：\n```\nAuthorization: Bearer YOUR_API_KEY\n```\n\n## 上传文件\n```bash\ncurl -X POST https://api.anywebsites.com/api/content/upload \\\n  -H "Authorization: Bearer YOUR_API_KEY" \\\n  -F "file=@example.txt"\n```', 'text/markdown', 89, CURRENT_TIMESTAMP - INTERVAL '5 days'),
-    ('c0000003-3333-3333-3333-333333333333', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', '测试数据', '这是一些测试数据，用于演示系统功能。', 'text/plain', 23, CURRENT_TIMESTAMP - INTERVAL '3 days'),
-    ('c0000004-4444-4444-4444-444444444444', 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff', 'JSON 配置示例', '{"name": "example", "version": "1.0.0", "description": "示例配置文件"}', 'application/json', 45, CURRENT_TIMESTAMP - INTERVAL '2 days'),
-    ('c0000005-5555-5555-5555-555555555555', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '系统公告', '系统将于本周末进行维护升级，预计停机时间为2小时。感谢您的理解与支持！', 'text/plain', 234, CURRENT_TIMESTAMP - INTERVAL '1 day');
+    ('10000001-1111-1111-1111-111111111111', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '欢迎使用 AnyWebsites', '这是一个示例文本内容，展示了 AnyWebsites 的基本功能。您可以上传文本、图片、文档等各种类型的文件。', 'text/plain', 156, CURRENT_TIMESTAMP - INTERVAL '7 days'),
+    ('10000002-2222-2222-2222-222222222222', '56ecc01e-9ffc-4515-8932-19912ce0805d', 'API 使用指南', '# API 使用指南
+
+## 认证
+使用 Bearer Token 进行认证：
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+## 上传文件
+```bash
+curl -X POST https://api.anywebsites.com/api/content/upload \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "file=@example.txt"
+```', 'text/markdown', 89, CURRENT_TIMESTAMP - INTERVAL '5 days'),
+    ('10000003-3333-3333-3333-333333333333', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', '测试数据', '这是一些测试数据，用于演示系统功能。', 'text/plain', 23, CURRENT_TIMESTAMP - INTERVAL '3 days'),
+    ('10000004-4444-4444-4444-444444444444', 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff', 'JSON 配置示例', '{"name": "example", "version": "1.0.0", "description": "示例配置文件"}', 'application/json', 45, CURRENT_TIMESTAMP - INTERVAL '2 days'),
+    ('10000005-5555-5555-5555-555555555555', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '系统公告', '系统将于本周末进行维护升级，预计停机时间为2小时。感谢您的理解与支持！', 'text/plain', 234, CURRENT_TIMESTAMP - INTERVAL '1 day');
 
 -- 插入内容分析数据（模拟访问记录）
 INSERT INTO content_analytics (id, content_id, ip_address, user_agent, referer, country, region, city, access_time)
 VALUES
     -- 中国访问记录
-    ('a0000001-1111-1111-1111-111111111111', 'c0000001-1111-1111-1111-111111111111', '192.168.1.100', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'https://google.com', 'China', 'Beijing', 'Beijing', CURRENT_TIMESTAMP - INTERVAL '6 days'),
-    ('a0000002-2222-2222-2222-222222222222', 'c0000001-1111-1111-1111-111111111111', '192.168.1.101', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36', 'https://baidu.com', 'China', 'Shanghai', 'Shanghai', CURRENT_TIMESTAMP - INTERVAL '6 days'),
-    ('a0000003-3333-3333-3333-333333333333', 'c0000002-2222-2222-2222-222222222222', '192.168.1.102', 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X)', 'https://github.com', 'China', 'Guangdong', 'Shenzhen', CURRENT_TIMESTAMP - INTERVAL '5 days'),
+    ('10000001-1111-1111-1111-111111111111', '10000001-1111-1111-1111-111111111111', '192.168.1.100', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'https://google.com', 'China', 'Beijing', 'Beijing', CURRENT_TIMESTAMP - INTERVAL '6 days'),
+    ('10000002-2222-2222-2222-222222222222', '10000001-1111-1111-1111-111111111111', '192.168.1.101', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36', 'https://baidu.com', 'China', 'Shanghai', 'Shanghai', CURRENT_TIMESTAMP - INTERVAL '6 days'),
+    ('10000003-3333-3333-3333-333333333333', '10000002-2222-2222-2222-222222222222', '192.168.1.102', 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X)', 'https://github.com', 'China', 'Guangdong', 'Shenzhen', CURRENT_TIMESTAMP - INTERVAL '5 days'),
 
     -- 美国访问记录
-    ('a0000004-4444-4444-4444-444444444444', 'c0000001-1111-1111-1111-111111111111', '203.0.113.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'https://google.com', 'United States', 'California', 'San Francisco', CURRENT_TIMESTAMP - INTERVAL '4 days'),
-    ('a0000005-5555-5555-5555-555555555555', 'c0000002-2222-2222-2222-222222222222', '203.0.113.2', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36', 'https://stackoverflow.com', 'United States', 'New York', 'New York', CURRENT_TIMESTAMP - INTERVAL '4 days'),
+    ('10000004-4444-4444-4444-444444444444', '10000001-1111-1111-1111-111111111111', '203.0.113.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'https://google.com', 'United States', 'California', 'San Francisco', CURRENT_TIMESTAMP - INTERVAL '4 days'),
+    ('10000005-5555-5555-5555-555555555555', '10000002-2222-2222-2222-222222222222', '203.0.113.2', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36', 'https://stackoverflow.com', 'United States', 'New York', 'New York', CURRENT_TIMESTAMP - INTERVAL '4 days'),
 
     -- 日本访问记录
-    ('a0000006-6666-6666-6666-666666666666', 'c0000003-3333-3333-3333-333333333333', '198.51.100.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'https://yahoo.co.jp', 'Japan', 'Tokyo', 'Tokyo', CURRENT_TIMESTAMP - INTERVAL '3 days'),
+    ('10000006-6666-6666-6666-666666666666', '10000003-3333-3333-3333-333333333333', '198.51.100.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'https://yahoo.co.jp', 'Japan', 'Tokyo', 'Tokyo', CURRENT_TIMESTAMP - INTERVAL '3 days'),
 
     -- 德国访问记录
-    ('a0000007-7777-7777-7777-777777777777', 'c0000004-4444-4444-4444-444444444444', '198.51.100.2', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36', 'https://google.de', 'Germany', 'Bavaria', 'Munich', CURRENT_TIMESTAMP - INTERVAL '2 days'),
+    ('10000007-7777-7777-7777-777777777777', '10000004-4444-4444-4444-444444444444', '198.51.100.2', 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36', 'https://google.de', 'Germany', 'Bavaria', 'Munich', CURRENT_TIMESTAMP - INTERVAL '2 days'),
 
     -- 英国访问记录
-    ('a0000008-8888-8888-8888-888888888888', 'c0000005-5555-5555-5555-555555555555', '198.51.100.3', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'https://bbc.co.uk', 'United Kingdom', 'England', 'London', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+    ('10000008-8888-8888-8888-888888888888', '10000005-5555-5555-5555-555555555555', '198.51.100.3', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'https://bbc.co.uk', 'United Kingdom', 'England', 'London', CURRENT_TIMESTAMP - INTERVAL '1 day'),
 
     -- 更多中国访问记录
-    ('a0000009-9999-9999-9999-999999999999', 'c0000001-1111-1111-1111-111111111111', '192.168.1.103', 'Mozilla/5.0 (Android 11; Mobile) AppleWebKit/537.36', 'https://weibo.com', 'China', 'Zhejiang', 'Hangzhou', CURRENT_TIMESTAMP - INTERVAL '1 day'),
-    ('a000000a-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'c0000002-2222-2222-2222-222222222222', '192.168.1.104', 'Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X)', 'https://zhihu.com', 'China', 'Jiangsu', 'Nanjing', CURRENT_TIMESTAMP - INTERVAL '12 hours');
+    ('10000009-9999-9999-9999-999999999999', '10000001-1111-1111-1111-111111111111', '192.168.1.103', 'Mozilla/5.0 (Android 11; Mobile) AppleWebKit/537.36', 'https://weibo.com', 'China', 'Zhejiang', 'Hangzhou', CURRENT_TIMESTAMP - INTERVAL '1 day'),
+    ('1000000a-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '10000002-2222-2222-2222-222222222222', '192.168.1.104', 'Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X)', 'https://zhihu.com', 'China', 'Jiangsu', 'Nanjing', CURRENT_TIMESTAMP - INTERVAL '12 hours');
 
 -- 插入使用统计数据
 INSERT INTO usage_statistics (id, user_id, month_year, uploads_count, storage_used_mb, api_calls_count, bandwidth_used_mb)
 VALUES
-    ('u0000001-1111-1111-1111-111111111111', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '2025-06', 45, 1250, 234, 5600),
-    ('u0000002-2222-2222-2222-222222222222', '56ecc01e-9ffc-4515-8932-19912ce0805d', '2025-06', 32, 890, 156, 3400),
-    ('u0000003-3333-3333-3333-333333333333', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', '2025-06', 18, 456, 89, 1200),
-    ('u0000004-4444-4444-4444-444444444444', 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff', '2025-06', 8, 123, 45, 567),
-    ('u0000005-5555-5555-5555-555555555555', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '2025-05', 38, 1100, 198, 4800),
-    ('u0000006-6666-6666-6666-666666666666', '56ecc01e-9ffc-4515-8932-19912ce0805d', '2025-05', 28, 750, 134, 2900),
-    ('u0000007-7777-7777-7777-777777777777', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', '2025-05', 15, 380, 67, 980),
-    ('u0000008-8888-8888-8888-888888888888', 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff', '2025-05', 5, 89, 23, 234);
+    ('30000001-1111-1111-1111-111111111111', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '2025-06', 45, 1250, 234, 5600),
+    ('30000002-2222-2222-2222-222222222222', '56ecc01e-9ffc-4515-8932-19912ce0805d', '2025-06', 32, 890, 156, 3400),
+    ('30000003-3333-3333-3333-333333333333', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', '2025-06', 18, 456, 89, 1200),
+    ('30000004-4444-4444-4444-444444444444', 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff', '2025-06', 8, 123, 45, 567),
+    ('30000005-5555-5555-5555-555555555555', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '2025-05', 38, 1100, 198, 4800),
+    ('30000006-6666-6666-6666-666666666666', '56ecc01e-9ffc-4515-8932-19912ce0805d', '2025-05', 28, 750, 134, 2900),
+    ('30000007-7777-7777-7777-777777777777', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', '2025-05', 15, 380, 67, 980),
+    ('30000008-8888-8888-8888-888888888888', 'bbbbbbbb-cccc-dddd-eeee-ffffffffffff', '2025-05', 5, 89, 23, 234);
 
 -- 插入计划升级历史
 INSERT INTO plan_upgrade_history (id, user_id, from_plan_id, to_plan_id, upgrade_type, reason, effective_date)
 VALUES
-    ('h0000001-1111-1111-1111-111111111111', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', '11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', 'upgrade', '需要更多存储空间和分析功能', CURRENT_TIMESTAMP - INTERVAL '30 days'),
-    ('h0000002-2222-2222-2222-222222222222', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '22222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333', 'upgrade', '管理员账户升级到专业版', CURRENT_TIMESTAMP - INTERVAL '60 days'),
-    ('h0000003-3333-3333-3333-333333333333', '56ecc01e-9ffc-4515-8932-19912ce0805d', '11111111-1111-1111-1111-111111111111', '33333333-3333-3333-3333-333333333333', 'upgrade', '直接升级到专业版以获得完整功能', CURRENT_TIMESTAMP - INTERVAL '90 days');
+    ('40000001-1111-1111-1111-111111111111', 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', '11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222', 'upgrade', '需要更多存储空间和分析功能', CURRENT_TIMESTAMP - INTERVAL '30 days'),
+    ('40000002-2222-2222-2222-222222222222', '6d53e189-76e0-4c4a-b94d-4e942e25bf60', '22222222-2222-2222-2222-222222222222', '33333333-3333-3333-3333-333333333333', 'upgrade', '管理员账户升级到专业版', CURRENT_TIMESTAMP - INTERVAL '60 days'),
+    ('40000003-3333-3333-3333-333333333333', '56ecc01e-9ffc-4515-8932-19912ce0805d', '11111111-1111-1111-1111-111111111111', '33333333-3333-3333-3333-333333333333', 'upgrade', '直接升级到专业版以获得完整功能', CURRENT_TIMESTAMP - INTERVAL '90 days');
 
 -- 插入一些基础系统设置
 INSERT INTO system_settings (id, category, key, value, default_value, value_type, description, is_required, is_active)
 VALUES
-    ('s0000001-1111-1111-1111-111111111111', 'server', 'host', '0.0.0.0', '0.0.0.0', 'string', '服务器监听地址', TRUE, TRUE),
-    ('s0000002-2222-2222-2222-222222222222', 'server', 'port', '8085', '8085', 'integer', '服务器监听端口', TRUE, TRUE),
-    ('s0000003-3333-3333-3333-333333333333', 'upload', 'max_file_size', '100', '100', 'integer', '最大文件大小（MB）', TRUE, TRUE),
-    ('s0000004-4444-4444-4444-444444444444', 'upload', 'allowed_types', 'text/*,image/*,application/json,application/pdf', 'text/*,image/*', 'string', '允许的文件类型', TRUE, TRUE),
-    ('s0000005-5555-5555-5555-555555555555', 'security', 'jwt_secret', 'your-secret-key-here', 'change-me', 'string', 'JWT 密钥', TRUE, TRUE),
-    ('s0000006-6666-6666-6666-666666666666', 'security', 'rate_limit', '100', '100', 'integer', '每分钟请求限制', TRUE, TRUE),
-    ('s0000007-7777-7777-7777-777777777777', 'geoip', 'enabled', 'true', 'false', 'boolean', '启用地理位置服务', FALSE, TRUE),
-    ('s0000008-8888-8888-8888-888888888888', 'geoip', 'database_path', '/app/data/GeoLite2-City.mmdb', '', 'string', 'GeoIP 数据库路径', FALSE, TRUE),
-    ('s0000009-9999-9999-9999-999999999999', 'system', 'site_name', 'AnyWebsites', 'AnyWebsites', 'string', '网站名称', FALSE, TRUE),
-    ('s000000a-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'system', 'maintenance_mode', 'false', 'false', 'boolean', '维护模式', FALSE, TRUE);
+    ('50000001-1111-1111-1111-111111111111', 'server', 'host', '0.0.0.0', '0.0.0.0', 'string', '服务器监听地址', TRUE, TRUE),
+    ('50000002-2222-2222-2222-222222222222', 'server', 'port', '8085', '8085', 'integer', '服务器监听端口', TRUE, TRUE),
+    ('50000003-3333-3333-3333-333333333333', 'upload', 'max_file_size', '100', '100', 'integer', '最大文件大小（MB）', TRUE, TRUE),
+    ('50000004-4444-4444-4444-444444444444', 'upload', 'allowed_types', 'text/*,image/*,application/json,application/pdf', 'text/*,image/*', 'string', '允许的文件类型', TRUE, TRUE),
+    ('50000005-5555-5555-5555-555555555555', 'security', 'jwt_secret', 'your-secret-key-here', 'change-me', 'string', 'JWT 密钥', TRUE, TRUE),
+    ('50000006-6666-6666-6666-666666666666', 'security', 'rate_limit', '100', '100', 'integer', '每分钟请求限制', TRUE, TRUE),
+    ('50000007-7777-7777-7777-777777777777', 'geoip', 'enabled', 'true', 'false', 'boolean', '启用地理位置服务', FALSE, TRUE),
+    ('50000008-8888-8888-8888-888888888888', 'geoip', 'database_path', '/app/data/GeoLite2-City.mmdb', '', 'string', 'GeoIP 数据库路径', FALSE, TRUE),
+    ('50000009-9999-9999-9999-999999999999', 'system', 'site_name', 'AnyWebsites', 'AnyWebsites', 'string', '网站名称', FALSE, TRUE),
+    ('5000000a-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'system', 'maintenance_mode', 'false', 'false', 'boolean', '维护模式', FALSE, TRUE);
