@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
 
   app:
-    image: hub.verycloud.cn/anywebsites/app:1.2.0
+    image: hub.verycloud.cn/anywebsites/app:1.2.0-amd64
     depends_on:
       postgres:
         condition: service_healthy
@@ -58,7 +58,7 @@ services:
       retries: 3
 
   nginx:
-    image: hub.verycloud.cn/anywebsites/nginx:1.2.0
+    image: hub.verycloud.cn/anywebsites/nginx:1.2.0-amd64
     ports:
       - "80:80"
       - "443:443"
