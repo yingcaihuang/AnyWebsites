@@ -20,7 +20,58 @@
 - **部署**: Docker + Docker Compose + Nginx
 - **地理位置**: GeoIP2
 
-## 快速开始
+## 🚀 Docker镜像部署（推荐）
+
+项目已构建并推送到 hub.verycloud.cn，支持一键部署：
+
+### 镜像信息
+- **应用程序**: `hub.verycloud.cn/anywebsites/app:1.2.0`
+- **Nginx**: `hub.verycloud.cn/anywebsites/nginx:1.2.0`
+
+### 快速部署
+
+```bash
+# 1. 下载部署文件
+wget https://raw.githubusercontent.com/your-repo/anywebsites/main/docker-compose.prod.yml
+wget https://raw.githubusercontent.com/your-repo/anywebsites/main/init.sql
+wget https://raw.githubusercontent.com/your-repo/anywebsites/main/.env.example -O .env
+
+# 2. 启动服务
+docker-compose -f docker-compose.prod.yml up -d
+
+# 3. 访问应用
+# HTTP: http://localhost
+# HTTPS: https://localhost
+# 管理后台: https://localhost/admin
+```
+
+### 使用部署脚本
+
+```bash
+# 下载部署脚本
+wget https://raw.githubusercontent.com/your-repo/anywebsites/main/deploy.sh
+chmod +x deploy.sh
+
+# 一键部署
+./deploy.sh start
+
+# 查看状态
+./deploy.sh status
+
+# 查看日志
+./deploy.sh logs
+
+# 更新部署
+./deploy.sh update
+```
+
+### 默认管理员账户
+- 用户名: `admin`，密码: `Google@google`
+- 用户名: `yingcai`，密码: `Yingcai@yingcai`
+
+⚠️ **生产环境请务必修改默认密码！**
+
+## 本地开发部署
 
 ### 1. 克隆项目
 

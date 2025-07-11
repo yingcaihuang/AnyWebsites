@@ -1,0 +1,81 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: anywebsites
+      POSTGRES_USER: anywebsites
+      POSTGRES_PASSWORD: anywebsites123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - anywebsites_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U anywebsites -d anywebsites"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - anywebsites_network
+    restart: unless-stopped
+
+  app:
+    image: hub.verycloud.cn/anywebsites/app:1.2.0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=anywebsites
+      - DB_PASSWORD=anywebsites123
+      - DB_NAME=anywebsites
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+      - ADMIN_PORT=8080
+      - API_PORT=8085
+      - GEOIP_DB_PATH=/app/GeoLite2-City.mmdb
+    volumes:
+      - geoip_data:/app/geoip
+    networks:
+      - anywebsites_network
+    restart: unless-stopped
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  nginx:
+    image: hub.verycloud.cn/anywebsites/nginx:1.2.0
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      app:
+        condition: service_healthy
+    volumes:
+      - nginx_ssl:/etc/nginx/ssl
+    networks:
+      - anywebsites_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  nginx_ssl:
+  geoip_data:
+
+networks:
+  anywebsites_network:
+    driver: bridge
